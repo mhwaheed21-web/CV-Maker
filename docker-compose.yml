@@ -2,13 +2,13 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: cvmaker
+      POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       retries: 5
 
@@ -18,7 +18,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@db:5432/cvmaker
+      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       SECRET_KEY: ${SECRET_KEY}
       ENVIRONMENT: development
@@ -36,27 +36,3 @@ services:
 
 volumes:
   postgres_data:
-```
-
----
-
-### File 5 — `backend/requirements.txt`
-
-Create `cv-maker/backend/requirements.txt`:
-```
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-sqlalchemy[asyncio]==2.0.35
-asyncpg==0.29.0
-alembic==1.13.3
-pydantic-settings==2.5.2
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-openai==1.51.0
-weasyprint==62.3
-jinja2==3.1.4
-python-multipart==0.0.12
-tenacity==9.0.0
-pytest==8.3.3
-pytest-asyncio==0.24.0
-httpx==0.27.2
