@@ -11,6 +11,11 @@ function AuthGuard({ children }) {
   return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
+function PublicRoute({ children }) {
+  const { isAuthenticated } = useAuthStore()
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children
+}
+
 export default function App() {
   const { setUser, logout } = useAuthStore()
   const [loading, setLoading] = useState(true)
@@ -20,20 +25,22 @@ export default function App() {
     if (token) {
       getMe()
         .then((res) => setUser(res.data))
-        .catch(() => logout())
+        .catch(() => {
+          logout()
+        })
         .finally(() => setLoading(false))
     } else {
       setLoading(false)
     }
   }, [])
 
-  if (loading) return <div style={{ padding: 40 }}>Loading...</div>
+  if (loading) return <div style={{ padding: 40, fontSize: 16 }}>Loading...</div>
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
         <Route
           path="/dashboard"
           element={
@@ -42,7 +49,7 @@ export default function App() {
             </AuthGuard>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   )

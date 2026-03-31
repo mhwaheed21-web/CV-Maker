@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import useAuthStore from '../store/authStore'
 import { useNavigate } from 'react-router-dom'
+import ProfilePage from './ProfilePage'
 
 export default function DashboardPage() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const [activePage, setActivePage] = useState('profile')
 
   const handleLogout = () => {
     logout()
@@ -12,26 +15,65 @@ export default function DashboardPage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>CV Maker Dashboard</h1>
-        <button style={styles.logoutBtn} onClick={handleLogout}>
-          Logout
-        </button>
+      <div style={styles.sidebar}>
+        <div style={styles.logo}>CV Maker</div>
+        <nav style={styles.nav}>
+          <button
+            style={{ ...styles.navItem, ...(activePage === 'profile' ? styles.navActive : {}) }}
+            onClick={() => setActivePage('profile')}
+          >
+            My Profile
+          </button>
+          <button
+            style={{ ...styles.navItem, ...(activePage === 'generate' ? styles.navActive : {}) }}
+            onClick={() => setActivePage('generate')}
+          >
+            Generate CV
+          </button>
+          <button
+            style={{ ...styles.navItem, ...(activePage === 'cvs' ? styles.navActive : {}) }}
+            onClick={() => setActivePage('cvs')}
+          >
+            My CVs
+          </button>
+        </nav>
+        <div style={styles.userInfo}>
+          <p style={styles.userName}>{user?.full_name}</p>
+          <p style={styles.userEmail}>{user?.email}</p>
+          <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
+        </div>
       </div>
-      <div style={styles.card}>
-        <h2>Welcome, {user?.full_name}!</h2>
-        <p>Email: {user?.email}</p>
-        <p style={styles.note}>Phase 2 coming next — profile management.</p>
+
+      <div style={styles.main}>
+        {activePage === 'profile' && <ProfilePage />}
+        {activePage === 'generate' && (
+          <div style={styles.placeholder}>
+            <h2>Generate CV</h2>
+            <p>Coming in Phase 3</p>
+          </div>
+        )}
+        {activePage === 'cvs' && (
+          <div style={styles.placeholder}>
+            <h2>My CVs</h2>
+            <p>Coming in Phase 3</p>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
 const styles = {
-  container: { minHeight: '100vh', backgroundColor: '#f5f5f5', padding: '24px' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
-  title: { fontSize: '24px', margin: 0 },
-  logoutBtn: { padding: '8px 16px', borderRadius: '8px', backgroundColor: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer' },
-  card: { backgroundColor: '#fff', padding: '32px', borderRadius: '12px', boxShadow: '0 2px 16px rgba(0,0,0,0.1)' },
-  note: { color: '#666', marginTop: '16px' },
+  container: { display: 'flex', minHeight: '100vh', backgroundColor: '#f5f5f5' },
+  sidebar: { width: '240px', backgroundColor: '#1e293b', display: 'flex', flexDirection: 'column', padding: '24px 0', flexShrink: 0 },
+  logo: { color: '#fff', fontSize: '20px', fontWeight: '700', padding: '0 24px 24px' },
+  nav: { display: 'flex', flexDirection: 'column', flex: 1 },
+  navItem: { padding: '12px 24px', background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', textAlign: 'left', cursor: 'pointer' },
+  navActive: { backgroundColor: '#334155', color: '#fff' },
+  userInfo: { padding: '16px 24px', borderTop: '1px solid #334155' },
+  userName: { color: '#fff', fontSize: '14px', margin: '0 0 2px' },
+  userEmail: { color: '#64748b', fontSize: '12px', margin: '0 0 12px' },
+  logoutBtn: { width: '100%', padding: '8px', borderRadius: '6px', background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px' },
+  main: { flex: 1, overflowY: 'auto' },
+  placeholder: { padding: '40px', color: '#666' },
 }
