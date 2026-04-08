@@ -5,6 +5,7 @@ import { getMe } from './api/auth'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
+import CVViewPage from './pages/CVViewPage'
 
 function AuthGuard({ children }) {
   const { isAuthenticated } = useAuthStore()
@@ -25,9 +26,7 @@ export default function App() {
     if (token) {
       getMe()
         .then((res) => setUser(res.data))
-        .catch(() => {
-          logout()
-        })
+        .catch(() => logout())
         .finally(() => setLoading(false))
     } else {
       setLoading(false)
@@ -41,14 +40,8 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-        <Route
-          path="/dashboard"
-          element={
-            <AuthGuard>
-              <DashboardPage />
-            </AuthGuard>
-          }
-        />
+        <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
+        <Route path="/cv/:id" element={<AuthGuard><CVViewPage /></AuthGuard>} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

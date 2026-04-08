@@ -2,6 +2,8 @@ import { useState } from 'react'
 import useAuthStore from '../store/authStore'
 import { useNavigate } from 'react-router-dom'
 import ProfilePage from './ProfilePage'
+import GeneratePage from './GeneratePage'
+import CVListPage from './CVListPage'
 
 export default function DashboardPage() {
   const { user, logout } = useAuthStore()
@@ -46,18 +48,8 @@ export default function DashboardPage() {
 
       <div style={styles.main}>
         {activePage === 'profile' && <ProfilePage />}
-        {activePage === 'generate' && (
-          <div style={styles.placeholder}>
-            <h2>Generate CV</h2>
-            <p>Coming in Phase 3</p>
-          </div>
-        )}
-        {activePage === 'cvs' && (
-          <div style={styles.placeholder}>
-            <h2>My CVs</h2>
-            <p>Coming in Phase 3</p>
-          </div>
-        )}
+        {activePage === 'generate' && <GeneratePage />}
+        {activePage === 'cvs' && <CVListPage />}
       </div>
     </div>
   )
@@ -75,5 +67,4 @@ const styles = {
   userEmail: { color: '#64748b', fontSize: '12px', margin: '0 0 12px' },
   logoutBtn: { width: '100%', padding: '8px', borderRadius: '6px', background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px' },
   main: { flex: 1, overflowY: 'auto' },
-  placeholder: { padding: '40px', color: '#666' },
 }

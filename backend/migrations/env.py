@@ -16,6 +16,7 @@ from app.models.profile import (
     Project,
     Certification,
 )
+from app.models.cv import GeneratedCV
 
 config = context.config
 
