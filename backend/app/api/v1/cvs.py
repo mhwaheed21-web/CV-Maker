@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from fastapi.responses import Response
+from fastapi.responses import Response,HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.session import get_db
@@ -129,7 +129,7 @@ async def download_cv(
     )
 
 
-@router.get("/{cv_id}/preview")
+@router.get("/{cv_id}/preview", response_class=HTMLResponse)
 async def preview_cv(
     cv_id: str,
     db: AsyncSession = Depends(get_db),
@@ -146,28 +146,28 @@ async def preview_cv(
     cv_content = cv.cv_content or {}
 
     user_result = await db.execute(
-        select(User).where(User.id == current_user.id)
+        select(User).where(User.id == cv.user_id)
     )
     user = user_result.scalar_one_or_none()
 
     from app.services.profile_service import get_or_create_profile
-    profile = await get_or_create_profile(db, current_user.id)
+    profile = await get_or_create_profile(db, cv.user_id)
 
     user_dict = {
-        "full_name": user.full_name,
-        "email": user.email,
+        "full_name": user.full_name if user else "",
+        "email": user.email if user else "",
         "personal": {
-            "phone": profile.phone,
-            "location": profile.location,
-            "linkedin_url": profile.linkedin_url,
-            "portfolio_url": profile.portfolio_url,
+            "phone": profile.phone if profile else "",
+            "location": profile.location if profile else "",
+            "linkedin_url": profile.linkedin_url if profile else "",
+            "portfolio_url": profile.portfolio_url if profile else "",
         }
     }
 
     clean_content = {k: v for k, v in cv_content.items() if not k.startswith("_")}
     html_content = render_cv_html(clean_content, user_dict, cv.template_id)
 
-    return Response(content=html_content, media_type="text/html")
+    return HTMLResponse(content=html_content)
 
 
 @router.delete("/{cv_id}", status_code=204)
