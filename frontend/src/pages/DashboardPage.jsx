@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import ProfilePage from './ProfilePage'
 import GeneratePage from './GeneratePage'
 import CVListPage from './CVListPage'
+import { useLocation } from 'react-router-dom'
 
 export default function DashboardPage() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
-  const [activePage, setActivePage] = useState('profile')
+  const location = useLocation()
+  const [activePage, setActivePage] = useState(location.state?.page || 'profile')
 
   const handleLogout = () => {
     logout()
