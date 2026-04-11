@@ -61,7 +61,7 @@ export default function CVListPage() {
             <div
               key={cv.id}
               style={styles.card}
-              onClick={() => cv.status === 'complete' && navigate(`/cv/${cv.id}`)}
+              onClick={() => cv.status === 'complete' && navigate(`/cv/${cv.id}`, { state: { from: 'cvs' } })}
             >
               <div style={styles.cardLeft}>
                 <div style={styles.cvTitle}>{cv.title}</div>

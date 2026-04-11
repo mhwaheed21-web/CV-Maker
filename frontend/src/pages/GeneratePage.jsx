@@ -37,7 +37,7 @@ export default function GeneratePage() {
           if (currentStatus === 'complete') {
             clearInterval(poll)
             setLoading(false)
-            navigate(`/cv/${cvId}`)
+            navigate(`/cv/${cvId}`, { state: { from: 'generate' } })
           } else if (currentStatus === 'failed') {
             clearInterval(poll)
             setLoading(false)

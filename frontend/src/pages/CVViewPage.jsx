@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getCV, downloadCV, previewCVUrl } from '../api/cvs'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 
 export default function CVViewPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from || 'cvs'
   const [cv, setCv] = useState(null)
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
@@ -42,7 +45,7 @@ export default function CVViewPage() {
   return (
     <div style={styles.container}>
       <div style={styles.sidebar}>
-        <button style={styles.backBtn} onClick={() => navigate(-1)}>
+        <button style={styles.backBtn} onClick={() => navigate('/dashboard', { state: { page: from } })}>
           ← Back
         </button>
 
