@@ -17,6 +17,7 @@ from app.models.profile import (
     Certification,
 )
 from app.models.cv import GeneratedCV
+from app.models.chat import CVChatMessage
 
 config = context.config
 

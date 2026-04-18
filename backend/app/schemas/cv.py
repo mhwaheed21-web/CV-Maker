@@ -9,6 +9,12 @@ class CVGenerateRequest(BaseModel):
     title: Optional[str] = None
 
 
+class CVRegenerateRequest(BaseModel):
+    job_description: Optional[str] = None
+    template_id: Optional[str] = None
+    title: Optional[str] = None
+
+
 class CVStatusResponse(BaseModel):
     id: str
     status: str

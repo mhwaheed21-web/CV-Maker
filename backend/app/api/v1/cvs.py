@@ -7,7 +7,7 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.cv import GeneratedCV
 from app.schemas.cv import (
-    CVGenerateRequest, CVStatusResponse,
+    CVGenerateRequest, CVRegenerateRequest, CVStatusResponse,
     CVListResponse, CVDetailResponse
 )
 from app.services import cv_service
@@ -60,6 +60,55 @@ async def generate_cv(
     )
 
     return cv
+
+
+@router.post("/{cv_id}/regenerate", response_model=CVStatusResponse, status_code=202)
+async def regenerate_cv_endpoint(
+    cv_id: str,
+    payload: CVRegenerateRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    # Verify CV exists and belongs to current user
+    cv = await cv_service.get_cv_by_id(db, current_user.id, cv_id)
+    if not cv:
+        raise HTTPException(status_code=404, detail="CV not found")
+
+    # Validate template_id if provided
+    if payload.template_id and not is_valid_template_id(payload.template_id):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Invalid template_id",
+                "allowed_template_ids": sorted(ALLOWED_TEMPLATE_IDS),
+            },
+        )
+
+    # Update CV with new parameters
+    updated_cv = await cv_service.regenerate_cv(
+        cv_id=cv_id,
+        user_id=current_user.id,
+        job_description=payload.job_description,
+        template_id=payload.template_id,
+        title=payload.title,
+        db=db,
+        user=current_user,
+    )
+
+    # Queue the generation pipeline as a separate background task
+    if updated_cv:
+        background_tasks.add_task(
+            cv_service.run_generation_pipeline,
+            cv_id=cv_id,
+            user_id=current_user.id,
+            job_description=updated_cv.job_description,
+            template_id=updated_cv.template_id,
+            db=None,  # Background task will create its own session
+            user=current_user,
+        )
+
+    return updated_cv
 
 
 @router.get("/", response_model=List[CVListResponse])

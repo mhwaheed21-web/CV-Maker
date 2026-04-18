@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { generateCV, getCVStatus } from '../api/cvs'
+import { getTemplates } from '../api/templates'
 import { useNavigate } from 'react-router-dom'
 
 export default function GeneratePage() {
@@ -9,6 +10,21 @@ export default function GeneratePage() {
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  const [templates, setTemplates] = useState([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState('minimal')
+  const [loadingTemplates, setLoadingTemplates] = useState(true)
+
+  useEffect(() => {
+    getTemplates()
+      .then((res) => {
+        setTemplates(res.data)
+        setLoadingTemplates(false)
+      })
+      .catch((err) => {
+        console.error('Failed to load templates:', err)
+        setLoadingTemplates(false)
+      })
+  }, [])
 
   const handleGenerate = async () => {
     if (!jobDescription.trim()) {
@@ -22,7 +38,7 @@ export default function GeneratePage() {
     try {
       const res = await generateCV({
         job_description: jobDescription,
-        template_id: 'minimal',
+        template_id: selectedTemplateId,
         title: title || undefined,
       })
 
@@ -67,6 +83,27 @@ export default function GeneratePage() {
       </p>
 
       <div style={styles.form}>
+        <label style={styles.label}>Select Template</label>
+        {loadingTemplates ? (
+          <p style={styles.loadingText}>Loading templates...</p>
+        ) : (
+          <div style={styles.templateGrid}>
+            {templates.map((template) => (
+              <div
+                key={template.id}
+                style={{
+                  ...styles.templateCard,
+                  ...(selectedTemplateId === template.id ? styles.templateCardSelected : {}),
+                }}
+                onClick={() => setSelectedTemplateId(template.id)}
+              >
+                <div style={styles.templateName}>{template.name}</div>
+                <div style={styles.templateDescription}>{template.description}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <label style={styles.label}>CV Title (optional)</label>
         <input
           style={styles.input}
@@ -120,4 +157,9 @@ const styles = {
   loadingBox: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', backgroundColor: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' },
   spinner: { width: '18px', height: '18px', border: '2px solid #bfdbfe', borderTop: '2px solid #2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
   loadingText: { color: '#1d4ed8', fontSize: '14px', margin: 0 },
+  templateGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginBottom: '16px' },
+  templateCard: { padding: '12px', borderRadius: '8px', border: '2px solid #e5e7eb', backgroundColor: '#f9fafb', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' },
+  templateCardSelected: { borderColor: '#2563eb', backgroundColor: '#eff6ff', boxShadow: '0 0 0 1px #2563eb' },
+  templateName: { fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '4px' },
+  templateDescription: { fontSize: '11px', color: '#6b7280', lineHeight: '1.3' },
 }
