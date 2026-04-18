@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.chat import ChatMessageCreate, ChatMessageResponse
+from app.schemas.chat import ChatMessageCreate, ChatMessageResponse, ChatProcessResponse
 from app.services import chat_service
 
 router = APIRouter(prefix="/cvs/{cv_id}/chat", tags=["chat"])
@@ -24,7 +24,7 @@ async def list_chat_messages(
     return messages
 
 
-@router.post("/", response_model=ChatMessageResponse, status_code=201)
+@router.post("/", response_model=ChatProcessResponse, status_code=201)
 async def create_chat_message(
     cv_id: str,
     payload: ChatMessageCreate,
@@ -34,7 +34,9 @@ async def create_chat_message(
     if not payload.content.strip():
         raise HTTPException(status_code=422, detail="Message content cannot be empty")
 
-    message = await chat_service.add_chat_message(db, current_user.id, cv_id, payload)
-    if not message:
+    result = await chat_service.process_chat_message(db, current_user, cv_id, payload)
+    if result is None:
         raise HTTPException(status_code=404, detail="CV not found")
-    return message
+    if result == "empty":
+        raise HTTPException(status_code=422, detail="Message content cannot be empty")
+    return result

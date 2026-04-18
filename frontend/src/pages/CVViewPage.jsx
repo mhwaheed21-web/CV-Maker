@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getCV, downloadCV, previewCVUrl, regenerateCV, getCVStatus } from '../api/cvs'
-import { createChatMessage, getChatMessages } from '../api/chat'
+import { processChatMessage, getChatMessages } from '../api/chat'
 import { getTemplates } from '../api/templates'
 
 export default function CVViewPage() {
@@ -150,12 +150,25 @@ export default function CVViewPage() {
     setChatError('')
 
     try {
-      const res = await createChatMessage(id, {
+      const res = await processChatMessage(id, {
         content,
         role: 'user',
       })
 
-      setChatMessages((currentMessages) => [...currentMessages, res.data])
+      const { user_message, assistant_message, cv_updated } = res.data
+
+      setChatMessages((currentMessages) => [
+        ...currentMessages,
+        user_message,
+        assistant_message,
+      ])
+
+      if (cv_updated) {
+        const updatedCV = await getCV(id)
+        setCv(updatedCV.data)
+        setPreviewVersion((currentVersion) => currentVersion + 1)
+      }
+
       setChatInput('')
     } catch (err) {
       console.error('Failed to send chat message:', err)

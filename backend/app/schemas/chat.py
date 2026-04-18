@@ -18,3 +18,9 @@ class ChatMessageResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ChatProcessResponse(BaseModel):
+    user_message: ChatMessageResponse
+    assistant_message: ChatMessageResponse
+    cv_updated: bool
