@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 10pt;
+    color: #2c3e50;
+    line-height: 1.6;
+    background: #fff;
+  }
+
+  .container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 35%;
+    background: #1a2332;
+    color: #fff;
+    padding: 40px 24px;
+    flex-shrink: 0;
+  }
+
+  .main {
+    width: 65%;
+    padding: 40px 32px;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .header-sidebar {
+    margin-bottom: 32px;
+  }
+
+  .name {
+    font-size: 22pt;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .contact-row {
+    font-size: 8.5pt;
+    color: #ccc;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    line-height: 1.4;
+  }
+
+  /* Main content header */
+  .main-header {
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .main-name {
+    font-size: 16pt;
+    font-weight: 700;
+    color: #1a2332;
+  }
+
+  /* Summary */
+  .summary {
+    margin-bottom: 16px;
+    font-size: 10pt;
+    color: #34495e;
+    line-height: 1.5;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    font-size: 11pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #3498db;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Items */
+  .item {
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+  }
+
+  .item-heading {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #1a2332;
+  }
+
+  .item-subheading {
+    font-size: 9pt;
+    color: #7f8c8d;
+    margin-top: 1px;
+  }
+
+  /* Bullets */
+  .bullets {
+    margin-top: 3px;
+    padding-left: 14px;
+  }
+
+  .bullets li {
+    font-size: 9.5pt;
+    margin-bottom: 1px;
+    color: #34495e;
+  }
+
+  /* Skills special layout */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .skill-group {
+    margin-bottom: 8px;
+  }
+
+  .skill-group-title {
+    font-size: 9pt;
+    font-weight: 600;
+    color: #3498db;
+    margin-bottom: 2px;
+  }
+
+  .skill-list {
+    font-size: 9.5pt;
+    color: #34495e;
+  }
+
+  /* Sidebar sections */
+  .sidebar-section {
+    margin-bottom: 24px;
+  }
+
+  .sidebar-title {
+    font-size: 10pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #3498db;
+    border-bottom: 1px solid #2c3e50;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .sidebar-item {
+    font-size: 9pt;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  @page {
+    margin: 0;
+    size: A4;
+  }
+
+  @media print {
+    body { margin: 0; }
+    .container { flex: 1; }
+    .sidebar { page-break-inside: avoid; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="header-sidebar">
+      <div class="name">{{ full_name }}</div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-title">Contact</div>
+      {% if email %}<div class="sidebar-item">{{ email }}</div>{% endif %}
+      {% if phone %}<div class="sidebar-item">{{ phone }}</div>{% endif %}
+      {% if location %}<div class="sidebar-item">{{ location }}</div>{% endif %}
+      {% if linkedin_url %}<div class="sidebar-item">{{ linkedin_url }}</div>{% endif %}
+      {% if portfolio_url %}<div class="sidebar-item">{{ portfolio_url }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <!-- Summary -->
+    {% if summary %}
+    <div class="summary">{{ summary }}</div>
+    {% endif %}
+
+    <!-- Sections -->
+    {% for section in sections %}
+    <div class="section">
+      <div class="section-title">{{ section['title'] }}</div>
+
+      {% if section['type'] == "skills" %}
+      <div class="skills-grid">
+        {% for item in section['items'] %}
+        <div class="skill-group">
+          {% if item['heading'] %}
+          <div class="skill-group-title">{{ item['heading'] }}</div>
+          {% endif %}
+          <div class="skill-list">{{ item['bullets'] | join(', ') }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      {% for item in section['items'] %}
+      <div class="item">
+        <div class="item-heading">{{ item['heading'] }}</div>
+        {% if item['subheading'] %}
+        <div class="item-subheading">{{ item['subheading'] }}</div>
+        {% endif %}
+        {% if item['bullets'] %}
+        <ul class="bullets">
+          {% for bullet in item['bullets'] %}
+          <li>{{ bullet }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+    </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+</body>
+</html>

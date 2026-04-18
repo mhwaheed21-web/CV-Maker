@@ -71,7 +71,7 @@ export default function CVViewPage() {
 
       <div style={styles.preview}>
         <iframe
-          src={`/api/v1/cvs/${id}/preview`}
+          src={previewUrl}
           style={styles.iframe}
           title="CV Preview"
         />

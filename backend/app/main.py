@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.auth import router as auth_router
 from app.api.v1.profile import router as profile_router
 from app.api.v1.cvs import router as cvs_router
+from app.api.v1.templates import router as templates_router
 
 app = FastAPI(
     title="CV Maker API",
@@ -26,6 +27,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(profile_router, prefix="/api/v1")
 app.include_router(cvs_router, prefix="/api/v1")
+app.include_router(templates_router, prefix="/api/v1")
 
 
 @app.get("/")
