@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom'
 export default function CVListPage() {
   const [cvs, setCvs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [pendingDeleteCv, setPendingDeleteCv] = useState(null)
+  const [deleting, setDeleting] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -14,14 +16,23 @@ export default function CVListPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const handleDelete = async (e, id) => {
+  const handleDeleteClick = (e, cv) => {
     e.stopPropagation()
-    if (!confirm('Delete this CV?')) return
+    setPendingDeleteCv(cv)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!pendingDeleteCv) return
+
+    setDeleting(true)
     try {
-      await deleteCV(id)
-      setCvs(cvs.filter((cv) => cv.id !== id))
+      await deleteCV(pendingDeleteCv.id)
+      setCvs((currentCvs) => currentCvs.filter((cv) => cv.id !== pendingDeleteCv.id))
+      setPendingDeleteCv(null)
     } catch (err) {
       console.error(err)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -31,52 +42,72 @@ export default function CVListPage() {
     })
   }
 
-  const statusColor = (status) => {
-    if (status === 'complete') return '#16a34a'
-    if (status === 'failed') return '#ef4444'
-    return '#d97706'
+  const statusClass = (status) => {
+    if (status === 'complete') return 'border-green-200 bg-green-50 text-green-700'
+    if (status === 'failed') return 'border-red-200 bg-red-50 text-red-700'
+    return 'border-amber-200 bg-amber-50 text-amber-700'
   }
 
-  if (loading) return <div style={{ padding: 40 }}>Loading CVs...</div>
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="surface-card animate-pulse p-5">
+              <div className="mb-2 h-5 w-40 rounded bg-slate-200" />
+              <div className="mb-2 h-4 w-full rounded bg-slate-200" />
+              <div className="h-3 w-24 rounded bg-slate-200" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>My CVs</h2>
-        <button style={styles.generateBtn} onClick={() => navigate('/dashboard')}>
+    <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">My CVs</h2>
+        <button
+          className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700"
+          onClick={() => navigate('/dashboard', { state: { page: 'generate' } })}
+        >
           + Generate New CV
         </button>
       </div>
 
       {cvs.length === 0 ? (
-        <div style={styles.empty}>
-          <p>No CVs generated yet.</p>
-          <p style={{ color: '#666', fontSize: '14px' }}>
+        <div className="surface-card px-6 py-14 text-center text-slate-600">
+          <p className="text-base font-semibold text-slate-800">No CVs generated yet.</p>
+          <p className="mt-2 text-sm text-slate-500">
             Go to Generate CV and paste a job description to get started.
           </p>
         </div>
       ) : (
-        <div style={styles.list}>
+        <div className="space-y-3">
           {cvs.map((cv) => (
             <div
               key={cv.id}
-              style={styles.card}
+              className="surface-card flex cursor-pointer flex-col gap-3 p-5 transition hover:-translate-y-0.5 hover:shadow-card sm:flex-row sm:items-center sm:justify-between"
               onClick={() => cv.status === 'complete' && navigate(`/cv/${cv.id}`, { state: { from: 'cvs' } })}
             >
-              <div style={styles.cardLeft}>
-                <div style={styles.cvTitle}>{cv.title}</div>
-                <div style={styles.cvJD}>
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 truncate text-base font-semibold text-slate-900">{cv.title}</div>
+                <div className="mb-2 text-sm text-slate-600">
                   {cv.job_description.slice(0, 100)}...
                 </div>
-                <div style={styles.cvMeta}>{formatDate(cv.created_at)}</div>
+                <div className="text-xs text-slate-500">{formatDate(cv.created_at)}</div>
               </div>
-              <div style={styles.cardRight}>
-                <span style={{ ...styles.badge, color: statusColor(cv.status) }}>
+
+              <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
+                <span
+                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusClass(cv.status)}`}
+                >
                   {cv.status}
                 </span>
                 <button
-                  style={styles.deleteBtn}
-                  onClick={(e) => handleDelete(e, cv.id)}
+                  className="inline-flex h-9 min-w-[44px] items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                  onClick={(e) => handleDeleteClick(e, cv)}
                 >
                   Delete
                 </button>
@@ -85,23 +116,42 @@ export default function CVListPage() {
           ))}
         </div>
       )}
+
+      {pendingDeleteCv && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          onClick={() => !deleting && setPendingDeleteCv(null)}
+        >
+          <div
+            className="surface-card w-full max-w-md p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-slate-900">Delete CV</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Are you sure you want to delete
+              <span className="font-semibold text-slate-800"> {pendingDeleteCv.title}</span>?
+              This action cannot be undone.
+            </p>
+
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setPendingDeleteCv(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
-}
-
-const styles = {
-  container: { padding: '32px', maxWidth: '860px', margin: '0 auto' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
-  title: { fontSize: '24px', margin: 0 },
-  generateBtn: { padding: '10px 18px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px' },
-  empty: { textAlign: 'center', padding: '60px 0', color: '#444' },
-  list: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  card: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px 24px', cursor: 'pointer' },
-  cardLeft: { flex: 1 },
-  cvTitle: { fontSize: '16px', fontWeight: '600', marginBottom: '4px' },
-  cvJD: { fontSize: '13px', color: '#666', marginBottom: '6px' },
-  cvMeta: { fontSize: '12px', color: '#999' },
-  cardRight: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' },
-  badge: { fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' },
-  deleteBtn: { padding: '6px 12px', borderRadius: '6px', backgroundColor: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: '12px' },
 }

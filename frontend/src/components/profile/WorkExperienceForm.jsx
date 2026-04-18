@@ -32,30 +32,86 @@ function ExperienceItem({ item, onSave, onDelete }) {
   }
 
   return (
-    <div style={styles.item}>
-      <div style={styles.row}>
-        <input style={styles.input} name="job_title" placeholder="Job Title" value={form.job_title} onChange={handleChange} />
-        <input style={styles.input} name="company_name" placeholder="Company" value={form.company_name} onChange={handleChange} />
+    <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="job_title"
+          placeholder="Job Title"
+          value={form.job_title}
+          onChange={handleChange}
+        />
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="company_name"
+          placeholder="Company"
+          value={form.company_name}
+          onChange={handleChange}
+        />
       </div>
-      <div style={styles.row}>
-        <input style={styles.input} name="start_date" placeholder="Start date (e.g. Jan 2022)" value={form.start_date || ''} onChange={handleChange} />
-        <input style={styles.input} name="end_date" placeholder="End date (or leave blank if current)" value={form.end_date || ''} onChange={handleChange} disabled={form.is_current} />
+
+      <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="start_date"
+          placeholder="Start date (e.g. Jan 2022)"
+          value={form.start_date || ''}
+          onChange={handleChange}
+        />
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+          name="end_date"
+          placeholder="End date (or leave blank if current)"
+          value={form.end_date || ''}
+          onChange={handleChange}
+          disabled={form.is_current}
+        />
       </div>
-      <label style={styles.checkbox}>
+
+      <label className="mb-2 inline-flex items-center gap-2 text-sm text-slate-700">
         <input type="checkbox" checked={form.is_current} onChange={(e) => setForm({ ...form, is_current: e.target.checked })} />
         Currently working here
       </label>
-      <p style={styles.label}>Responsibilities / Achievements</p>
+
+      <p className="mb-2 text-sm font-medium text-slate-600">Responsibilities / Achievements</p>
       {(form.responsibilities || []).map((bullet, i) => (
-        <div key={i} style={styles.bulletRow}>
-          <input style={{ ...styles.input, flex: 1 }} placeholder={`Bullet point ${i + 1}`} value={bullet} onChange={(e) => handleBulletChange(i, e.target.value)} />
-          <button style={styles.removeBtn} onClick={() => removeBullet(i)}>✕</button>
+        <div key={i} className="mb-2 flex gap-2">
+          <input
+            className="h-11 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            placeholder={`Bullet point ${i + 1}`}
+            value={bullet}
+            onChange={(e) => handleBulletChange(i, e.target.value)}
+          />
+          <button
+            className="h-11 min-w-[44px] rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+            onClick={() => removeBullet(i)}
+          >
+            ✕
+          </button>
         </div>
       ))}
-      <button style={styles.addBtn} onClick={addBullet}>+ Add bullet</button>
-      <div style={styles.actions}>
-        <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-        <button style={styles.deleteBtn} onClick={() => onDelete(item.id)}>Delete</button>
+
+      <button
+        className="mt-1 min-h-[44px] rounded-xl border border-dashed border-brand-400 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+        onClick={addBullet}
+      >
+        + Add bullet
+      </button>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          className="min-h-[44px] rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        <button
+          className="min-h-[44px] rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+          onClick={() => onDelete(item.id)}
+        >
+          Delete
+        </button>
       </div>
     </div>
   )
@@ -98,22 +154,13 @@ export default function WorkExperienceForm({ data }) {
       ))}
       {adding && <ExperienceItem item={newItem} onSave={handleSave} onDelete={() => setAdding(false)} />}
       {!adding && (
-        <button style={styles.addBtn} onClick={() => setAdding(true)}>+ Add Work Experience</button>
+        <button
+          className="min-h-[44px] rounded-xl border border-dashed border-brand-400 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+          onClick={() => setAdding(true)}
+        >
+          + Add Work Experience
+        </button>
       )}
     </div>
   )
-}
-
-const styles = {
-  item: { background: '#f9f9f9', border: '1px solid #eee', borderRadius: '8px', padding: '16px', marginBottom: '12px' },
-  row: { display: 'flex', gap: '12px', marginBottom: '8px' },
-  input: { flex: 1, padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
-  label: { fontSize: '13px', color: '#555', marginBottom: '6px' },
-  checkbox: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '8px' },
-  bulletRow: { display: 'flex', gap: '8px', marginBottom: '6px' },
-  removeBtn: { padding: '8px 12px', borderRadius: '8px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer', color: '#ef4444' },
-  addBtn: { padding: '8px 16px', borderRadius: '8px', border: '1px dashed #2563eb', background: '#fff', color: '#2563eb', cursor: 'pointer', fontSize: '14px', marginTop: '8px' },
-  actions: { display: 'flex', gap: '8px', marginTop: '12px' },
-  saveBtn: { padding: '8px 16px', borderRadius: '8px', background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px' },
-  deleteBtn: { padding: '8px 16px', borderRadius: '8px', background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px' },
 }

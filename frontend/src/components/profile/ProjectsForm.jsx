@@ -26,24 +26,77 @@ function ProjectItem({ item, onSave, onDelete }) {
   }
 
   return (
-    <div style={styles.item}>
-      <div style={styles.row}>
-        <input style={styles.input} name="name" placeholder="Project name" value={form.name} onChange={handleChange} />
-        <input style={styles.input} name="url" placeholder="URL (optional)" value={form.url || ''} onChange={handleChange} />
+    <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="name"
+          placeholder="Project name"
+          value={form.name}
+          onChange={handleChange}
+        />
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="url"
+          placeholder="URL (optional)"
+          value={form.url || ''}
+          onChange={handleChange}
+        />
       </div>
-      <textarea style={styles.textarea} name="description" placeholder="Project description" value={form.description || ''} onChange={handleChange} rows={3} />
-      <div style={styles.techRow}>
+
+      <textarea
+        className="mb-2 min-h-24 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+        name="description"
+        placeholder="Project description"
+        value={form.description || ''}
+        onChange={handleChange}
+        rows={3}
+      />
+
+      <div className="mb-2 flex flex-wrap gap-2">
         {form.technologies.map((t, i) => (
-          <span key={i} style={styles.tag}>{t} <button style={styles.tagRemove} onClick={() => removeTech(i)}>✕</button></span>
+          <span
+            key={i}
+            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700"
+          >
+            {t}
+            <button className="text-sky-600 transition hover:text-sky-800" onClick={() => removeTech(i)}>
+              ✕
+            </button>
+          </span>
         ))}
       </div>
-      <div style={styles.row}>
-        <input style={styles.input} placeholder="Add technology" value={techInput} onChange={(e) => setTechInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTech()} />
-        <button style={styles.addBtn} onClick={addTech}>Add</button>
+
+      <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-[1fr_auto]">
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          placeholder="Add technology"
+          value={techInput}
+          onChange={(e) => setTechInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addTech()}
+        />
+        <button
+          className="h-11 min-w-[44px] rounded-xl border border-slate-300 bg-slate-100 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+          onClick={addTech}
+        >
+          Add
+        </button>
       </div>
-      <div style={styles.actions}>
-        <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-        <button style={styles.deleteBtn} onClick={() => onDelete(item.id)}>Delete</button>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          className="min-h-[44px] rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        <button
+          className="min-h-[44px] rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+          onClick={() => onDelete(item.id)}
+        >
+          Delete
+        </button>
       </div>
     </div>
   )
@@ -86,22 +139,13 @@ export default function ProjectsForm({ data }) {
       ))}
       {adding && <ProjectItem item={newItem} onSave={handleSave} onDelete={() => setAdding(false)} />}
       {!adding && (
-        <button style={styles.addBtn} onClick={() => setAdding(true)}>+ Add Project</button>
+        <button
+          className="min-h-[44px] rounded-xl border border-dashed border-brand-400 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+          onClick={() => setAdding(true)}
+        >
+          + Add Project
+        </button>
       )}
     </div>
   )
-}
-
-const styles = {
-  item: { background: '#f9f9f9', border: '1px solid #eee', borderRadius: '8px', padding: '16px', marginBottom: '12px' },
-  row: { display: 'flex', gap: '12px', marginBottom: '8px' },
-  input: { flex: 1, padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
-  textarea: { width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', marginBottom: '8px' },
-  techRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' },
-  tag: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', background: '#e0f2fe', color: '#0369a1', fontSize: '12px' },
-  tagRemove: { background: 'none', border: 'none', cursor: 'pointer', color: '#0369a1', fontSize: '11px' },
-  actions: { display: 'flex', gap: '8px', marginTop: '12px' },
-  saveBtn: { padding: '8px 16px', borderRadius: '8px', background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px' },
-  deleteBtn: { padding: '8px 16px', borderRadius: '8px', background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px' },
-  addBtn: { padding: '8px 16px', borderRadius: '8px', border: '1px dashed #2563eb', background: '#fff', color: '#2563eb', cursor: 'pointer', fontSize: '14px', marginTop: '8px' },
 }

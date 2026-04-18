@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getCV, downloadCV, previewCVUrl, regenerateCV, getCVStatus } from '../api/cvs'
 import { processChatMessage, getChatMessages } from '../api/chat'
 import { getTemplates } from '../api/templates'
+import ChatPanel from '../components/chat/ChatPanel'
 
 export default function CVViewPage() {
   const { id } = useParams()
@@ -25,6 +26,7 @@ export default function CVViewPage() {
   const [loadingChat, setLoadingChat] = useState(true)
   const [sendingChat, setSendingChat] = useState(false)
   const [chatError, setChatError] = useState('')
+  const [showMobileChat, setShowMobileChat] = useState(false)
 
   useEffect(() => {
     getCV(id)
@@ -185,224 +187,258 @@ export default function CVViewPage() {
     }
   }
 
-  if (loading) return <div style={{ padding: 40 }}>Loading CV...</div>
-  if (!cv) return <div style={{ padding: 40 }}>CV not found</div>
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[280px_minmax(0,1fr)_340px]">
+          <div className="surface-card animate-pulse p-5">
+            <div className="mb-3 h-10 rounded-xl bg-slate-200" />
+            <div className="mb-2 h-5 w-36 rounded bg-slate-200" />
+            <div className="mb-2 h-3 w-24 rounded bg-slate-200" />
+            <div className="h-24 rounded bg-slate-200" />
+          </div>
+          <div className="surface-card animate-pulse p-5">
+            <div className="h-[70vh] rounded-xl bg-slate-200" />
+          </div>
+          <div className="surface-card hidden animate-pulse p-5 xl:block">
+            <div className="mb-2 h-5 w-32 rounded bg-slate-200" />
+            <div className="h-[70vh] rounded-xl bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!cv) {
+    return (
+      <div className="mx-auto w-full max-w-4xl p-6">
+        <div className="surface-card p-6 text-center">
+          <p className="text-base font-semibold text-slate-900">CV not found</p>
+          <p className="mt-2 text-sm text-slate-500">This CV may have been deleted or is inaccessible.</p>
+          <button
+            className="mt-4 inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700"
+            onClick={() => navigate('/dashboard', { state: { page: from } })}
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const previewUrl = `${previewCVUrl(id)}?token=${localStorage.getItem('access_token')}&v=${previewVersion}`
 
+  const statusBadgeClass =
+    cv.status === 'complete'
+      ? 'border-green-200 bg-green-50 text-green-700'
+      : cv.status === 'failed'
+        ? 'border-red-200 bg-red-50 text-red-700'
+        : 'border-amber-200 bg-amber-50 text-amber-700'
+
   return (
-    <div style={styles.container}>
-      <div style={styles.sidebar}>
-        <button style={styles.backBtn} onClick={() => navigate('/dashboard', { state: { page: from } })}>
+    <div className="mx-auto w-full max-w-[1800px] p-3 sm:p-4 lg:p-6">
+      <div className="mb-3 flex items-center justify-between xl:hidden">
+        <button
+          className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          onClick={() => navigate('/dashboard', { state: { page: from } })}
+        >
           ← Back
         </button>
-
-        <div style={styles.meta}>
-          <h2 style={styles.cvTitle}>{cv.title}</h2>
-          <p style={styles.metaLabel}>Status</p>
-          <p style={styles.metaValue}>{cv.status}</p>
-          <p style={styles.metaLabel}>Created</p>
-          <p style={styles.metaValue}>
-            {new Date(cv.created_at).toLocaleDateString()}
-          </p>
-          <p style={styles.metaLabel}>Job Description</p>
-          <p style={styles.jdText}>{cv.job_description}</p>
-        </div>
-
         <button
-          style={{ ...styles.downloadBtn, opacity: downloading ? 0.7 : 1 }}
-          onClick={handleDownload}
-          disabled={downloading}
+          className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl bg-slate-900 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          onClick={() => setShowMobileChat(true)}
         >
-          {downloading ? 'Downloading...' : 'Download PDF'}
+          Open Chat
         </button>
+      </div>
 
-        <button
-          style={styles.regenerateBtn}
-          onClick={() => setShowRegenerateModal(true)}
-          disabled={regenerating}
-        >
-          Regenerate
-        </button>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[280px_minmax(0,1fr)_340px]">
+        <aside className="surface-card h-fit space-y-4 p-4">
+          <button
+            className="hidden h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 xl:inline-flex"
+            onClick={() => navigate('/dashboard', { state: { page: from } })}
+          >
+            ← Back
+          </button>
 
-        <section style={styles.chatSection}>
-          <div style={styles.chatHeader}>
-            <h3 style={styles.chatTitle}>Chat History</h3>
-            <p style={styles.chatSubtitle}>Messages are stored with this CV.</p>
+          <div>
+            <h2 className="line-clamp-2 text-lg font-bold text-slate-900">{cv.title}</h2>
+            <div className="mt-3 space-y-2 text-xs">
+              <div>
+                <p className="mb-1 font-semibold uppercase tracking-wide text-slate-500">Status</p>
+                <span className={`inline-flex rounded-full border px-2.5 py-1 font-semibold uppercase ${statusBadgeClass}`}>
+                  {cv.status}
+                </span>
+              </div>
+              <div>
+                <p className="mb-1 font-semibold uppercase tracking-wide text-slate-500">Created</p>
+                <p className="text-sm text-slate-700">{new Date(cv.created_at).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <p className="mb-1 font-semibold uppercase tracking-wide text-slate-500">Job Description</p>
+                <p className="line-clamp-[12] text-sm leading-relaxed text-slate-600">{cv.job_description}</p>
+              </div>
+            </div>
           </div>
 
-          <div style={styles.chatList}>
-            {loadingChat ? (
-              <p style={styles.chatPlaceholder}>Loading chat...</p>
-            ) : chatMessages.length === 0 ? (
-              <p style={styles.chatPlaceholder}>No messages yet. Start the conversation below.</p>
-            ) : (
-              chatMessages.map((message) => (
-                <div
-                  key={message.id}
-                  style={{
-                    ...styles.chatMessage,
-                    ...(message.role === 'user' ? styles.chatMessageUser : styles.chatMessageAssistant),
-                  }}
-                >
-                  <div style={styles.chatMessageMeta}>
-                    <span>{message.role}</span>
-                    <span>{new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                  <div style={styles.chatMessageContent}>{message.content}</div>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div style={styles.chatComposer}>
-            <textarea
-              style={styles.chatTextarea}
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={handleChatKeyDown}
-              placeholder="Ask a follow-up question or note a change..."
-              rows={4}
-              disabled={sendingChat}
-            />
-            {chatError && <p style={styles.chatError}>{chatError}</p>}
+          <div className="space-y-2">
             <button
-              style={{ ...styles.chatSendBtn, opacity: sendingChat ? 0.7 : 1 }}
-              onClick={handleSendChatMessage}
-              disabled={sendingChat || !chatInput.trim()}
+              className="inline-flex h-11 min-w-[44px] w-full items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+              onClick={handleDownload}
+              disabled={downloading}
             >
-              {sendingChat ? 'Sending...' : 'Send Message'}
+              {downloading ? 'Downloading...' : 'Download PDF'}
             </button>
+
+            <button
+              className="inline-flex h-11 min-w-[44px] w-full items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              onClick={() => setShowRegenerateModal(true)}
+              disabled={regenerating}
+            >
+              Regenerate
+            </button>
+          </div>
+        </aside>
+
+        <section className="surface-card min-h-[75vh] p-3 sm:p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Live Preview</p>
+            <p className="text-xs text-slate-400">Version {previewVersion + 1}</p>
+          </div>
+          <div className="h-[72vh] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <iframe src={previewUrl} className="h-full w-full" title="CV Preview" />
           </div>
         </section>
 
-        {showRegenerateModal && (
-          <div style={styles.modalOverlay} onClick={() => !regenerating && setShowRegenerateModal(false)}>
-            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <h3 style={styles.modalTitle}>Regenerate CV</h3>
+        <div className="hidden xl:block">
+          <ChatPanel
+            loadingChat={loadingChat}
+            chatMessages={chatMessages}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            sendingChat={sendingChat}
+            chatError={chatError}
+            onSend={handleSendChatMessage}
+            onKeyDown={handleChatKeyDown}
+          />
+        </div>
+      </div>
 
-              <label style={styles.modalLabel}>CV Title</label>
-              <input
-                style={styles.modalInput}
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                disabled={regenerating}
+      {showMobileChat && (
+        <div
+          className="fixed inset-0 z-50 flex bg-slate-950/45 p-3 xl:hidden"
+          onClick={() => setShowMobileChat(false)}
+        >
+          <div className="ml-auto flex h-full w-full max-w-md flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-2 flex justify-end">
+              <button
+                className="inline-flex h-9 min-w-[44px] items-center justify-center rounded-lg bg-white px-3 text-xs font-semibold text-slate-700"
+                onClick={() => setShowMobileChat(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <ChatPanel
+                loadingChat={loadingChat}
+                chatMessages={chatMessages}
+                chatInput={chatInput}
+                setChatInput={setChatInput}
+                sendingChat={sendingChat}
+                chatError={chatError}
+                onSend={handleSendChatMessage}
+                onKeyDown={handleChatKeyDown}
               />
-
-              <label style={styles.modalLabel}>Template</label>
-              {loadingTemplates ? (
-                <p style={{ color: '#999', fontSize: '14px' }}>Loading templates...</p>
-              ) : (
-                <div style={styles.templateSelectGrid}>
-                  {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      style={{
-                        ...styles.templateOption,
-                        ...(formData.template_id === template.id ? styles.templateOptionSelected : {}),
-                      }}
-                      onClick={() => !regenerating && setFormData({ ...formData, template_id: template.id })}
-                    >
-                      {template.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <label style={styles.modalLabel}>Job Description</label>
-              <textarea
-                style={styles.modalTextarea}
-                value={formData.job_description}
-                onChange={(e) => setFormData({ ...formData, job_description: e.target.value })}
-                rows={6}
-                disabled={regenerating}
-              />
-
-              {regenerateError && <p style={styles.errorText}>{regenerateError}</p>}
-
-              {regenerating && (
-                <div style={styles.statusBox}>
-                  <div style={styles.spinner} />
-                  <p style={styles.statusText}>{regenerateStatus}</p>
-                </div>
-              )}
-
-              {!regenerating && (
-                <div style={styles.modalButtons}>
-                  <button
-                    style={styles.cancelBtn}
-                    onClick={() => setShowRegenerateModal(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    style={styles.regenerateConfirmBtn}
-                    onClick={handleRegenerate}
-                  >
-                    Regenerate
-                  </button>
-                </div>
-              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div style={styles.preview}>
-        <iframe
-          src={previewUrl}
-          style={styles.iframe}
-          title="CV Preview"
-        />
-      </div>
+      {showRegenerateModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          onClick={() => !regenerating && setShowRegenerateModal(false)}
+        >
+          <div
+            className="surface-card max-h-[92vh] w-full max-w-2xl overflow-y-auto p-5 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-slate-900">Regenerate CV</h3>
+
+            <label className="mt-4 mb-1 block text-sm font-semibold text-slate-700">CV Title</label>
+            <input
+              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              disabled={regenerating}
+            />
+
+            <label className="mt-4 mb-1 block text-sm font-semibold text-slate-700">Template</label>
+            {loadingTemplates ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    className={`rounded-lg border-2 px-3 py-2 text-xs font-semibold transition ${
+                      formData.template_id === template.id
+                        ? 'border-violet-500 bg-violet-50 text-violet-700'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-violet-300'
+                    }`}
+                    onClick={() => !regenerating && setFormData({ ...formData, template_id: template.id })}
+                  >
+                    {template.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <label className="mt-4 mb-1 block text-sm font-semibold text-slate-700">Job Description</label>
+            <textarea
+              className="min-h-40 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              value={formData.job_description}
+              onChange={(e) => setFormData({ ...formData, job_description: e.target.value })}
+              rows={6}
+              disabled={regenerating}
+            />
+
+            {regenerateError && (
+              <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {regenerateError}
+              </p>
+            )}
+
+            {regenerating && (
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-brand-600" />
+                <p className="text-sm font-medium text-blue-700">{regenerateStatus}</p>
+              </div>
+            )}
+
+            {!regenerating && (
+              <div className="mt-5 flex flex-wrap justify-end gap-2">
+                <button
+                  className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  onClick={() => setShowRegenerateModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white transition hover:bg-violet-700"
+                  onClick={handleRegenerate}
+                >
+                  Regenerate
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
-}
-
-const styles = {
-  container: { display: 'flex', height: '100vh', backgroundColor: '#f5f5f5' },
-  sidebar: { width: '280px', backgroundColor: '#fff', borderRight: '1px solid #e5e7eb', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, overflowY: 'auto' },
-  backBtn: { background: 'none', border: '1px solid #e5e7eb', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', textAlign: 'left' },
-  meta: { flex: 1 },
-  cvTitle: { fontSize: '16px', fontWeight: '700', marginBottom: '16px', lineHeight: '1.4' },
-  metaLabel: { fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', marginTop: '12px' },
-  metaValue: { fontSize: '14px', color: '#333' },
-  jdText: { fontSize: '12px', color: '#666', lineHeight: '1.5', marginTop: '4px' },
-  downloadBtn: { padding: '12px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
-  regenerateBtn: { padding: '12px', borderRadius: '8px', backgroundColor: '#7c3aed', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
-  chatSection: { border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', gap: '12px' },
-  chatHeader: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  chatTitle: { margin: 0, fontSize: '15px', fontWeight: '700', color: '#111827' },
-  chatSubtitle: { margin: 0, fontSize: '12px', color: '#6b7280' },
-  chatList: { display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '260px', overflowY: 'auto', paddingRight: '4px' },
-  chatPlaceholder: { margin: 0, fontSize: '13px', color: '#6b7280', lineHeight: '1.5' },
-  chatMessage: { padding: '10px 12px', borderRadius: '10px', border: '1px solid #e5e7eb', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', gap: '6px' },
-  chatMessageUser: { borderColor: '#c7d2fe', backgroundColor: '#eef2ff' },
-  chatMessageAssistant: { borderColor: '#d1d5db', backgroundColor: '#f9fafb' },
-  chatMessageMeta: { display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#6b7280' },
-  chatMessageContent: { fontSize: '13px', color: '#111827', lineHeight: '1.5', whiteSpace: 'pre-wrap' },
-  chatComposer: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  chatTextarea: { width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' },
-  chatError: { margin: 0, color: '#dc2626', fontSize: '13px' },
-  chatSendBtn: { padding: '10px 14px', borderRadius: '8px', backgroundColor: '#111827', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
-  preview: { flex: 1, padding: '24px', overflow: 'hidden' },
-  iframe: { width: '100%', height: '100%', border: 'none', borderRadius: '8px', boxShadow: '0 2px 16px rgba(0,0,0,0.1)', backgroundColor: '#fff' },
-  
-  // Modal styles
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { backgroundColor: '#fff', borderRadius: '12px', padding: '32px', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 25px rgba(0,0,0,0.15)' },
-  modalTitle: { fontSize: '20px', fontWeight: '700', marginBottom: '24px', color: '#1f2937' },
-  modalLabel: { fontSize: '13px', fontWeight: '600', color: '#374151', marginTop: '16px', marginBottom: '8px', display: 'block' },
-  modalInput: { width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '14px', boxSizing: 'border-box' },
-  modalTextarea: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' },
-  templateSelectGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '16px' },
-  templateOption: { padding: '10px', borderRadius: '8px', border: '2px solid #e5e7eb', backgroundColor: '#f9fafb', cursor: 'pointer', textAlign: 'center', fontSize: '13px', fontWeight: '500', color: '#374151', transition: 'all 0.2s' },
-  templateOptionSelected: { borderColor: '#7c3aed', backgroundColor: '#f3e8ff', color: '#6d28d9' },
-  errorText: { color: '#dc2626', fontSize: '13px', marginTop: '8px' },
-  statusBox: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', backgroundColor: '#eff6ff', borderRadius: '8px', marginTop: '16px' },
-  spinner: { width: '16px', height: '16px', border: '2px solid #bfdbfe', borderTop: '2px solid #2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
-  statusText: { color: '#1d4ed8', fontSize: '13px', margin: 0 },
-  modalButtons: { display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' },
-  cancelBtn: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: '#fff', color: '#374151', cursor: 'pointer', fontSize: '14px', fontWeight: '500' },
-  regenerateConfirmBtn: { padding: '10px 16px', borderRadius: '8px', backgroundColor: '#7c3aed', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '500' },
 }

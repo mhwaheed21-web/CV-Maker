@@ -34,42 +34,55 @@ export default function SkillsForm({ data }) {
 
   return (
     <div>
-      <div style={styles.tagContainer}>
+      <div className="mb-3 flex flex-wrap gap-2">
         {skills.map((skill) => (
-          <span key={skill.id} style={styles.tag}>
+          <span
+            key={skill.id}
+            className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+          >
             {skill.name}
-            <button style={styles.tagRemove} onClick={() => removeSkill(skill.id)}>✕</button>
+            <button
+              className="text-indigo-500 transition hover:text-indigo-700"
+              onClick={() => removeSkill(skill.id)}
+            >
+              ✕
+            </button>
           </span>
         ))}
       </div>
-      <div style={styles.addRow}>
+
+      <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-[1fr_auto_auto]">
         <input
-          style={styles.input}
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
           placeholder="Skill name"
           value={newSkill.name}
           onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
           onKeyDown={(e) => e.key === 'Enter' && addSkill()}
         />
-        <select style={styles.select} value={newSkill.category} onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}>
+        <select
+          className="h-11 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          value={newSkill.category}
+          onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
+        >
           <option value="technical">Technical</option>
           <option value="soft">Soft</option>
         </select>
-        <button style={styles.addBtn} onClick={addSkill}>Add</button>
+
+        <button
+          className="h-11 min-w-[44px] rounded-xl border border-slate-300 bg-slate-100 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+          onClick={addSkill}
+        >
+          Add
+        </button>
       </div>
-      <button style={styles.saveBtn} onClick={handleSave} disabled={saving}>
+
+      <button
+        className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+        onClick={handleSave}
+        disabled={saving}
+      >
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Skills'}
       </button>
     </div>
   )
-}
-
-const styles = {
-  tagContainer: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' },
-  tag: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: '#e0e7ff', color: '#3730a3', fontSize: '13px' },
-  tagRemove: { background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', fontSize: '12px' },
-  addRow: { display: 'flex', gap: '8px', marginBottom: '12px' },
-  input: { flex: 1, padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
-  select: { padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
-  addBtn: { padding: '10px 16px', borderRadius: '8px', background: '#f3f4f6', border: '1px solid #ddd', cursor: 'pointer', fontSize: '14px' },
-  saveBtn: { padding: '10px 20px', borderRadius: '8px', background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px' },
 }
