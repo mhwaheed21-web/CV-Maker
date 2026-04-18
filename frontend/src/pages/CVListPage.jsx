@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom'
 export default function CVListPage() {
   const [cvs, setCvs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [pendingDeleteCv, setPendingDeleteCv] = useState(null)
+  const [deleting, setDeleting] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -14,14 +16,23 @@ export default function CVListPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const handleDelete = async (e, id) => {
+  const handleDeleteClick = (e, cv) => {
     e.stopPropagation()
-    if (!confirm('Delete this CV?')) return
+    setPendingDeleteCv(cv)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!pendingDeleteCv) return
+
+    setDeleting(true)
     try {
-      await deleteCV(id)
-      setCvs(cvs.filter((cv) => cv.id !== id))
+      await deleteCV(pendingDeleteCv.id)
+      setCvs((currentCvs) => currentCvs.filter((cv) => cv.id !== pendingDeleteCv.id))
+      setPendingDeleteCv(null)
     } catch (err) {
       console.error(err)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -96,13 +107,49 @@ export default function CVListPage() {
                 </span>
                 <button
                   className="inline-flex h-9 min-w-[44px] items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 transition hover:bg-red-100"
-                  onClick={(e) => handleDelete(e, cv.id)}
+                  onClick={(e) => handleDeleteClick(e, cv)}
                 >
                   Delete
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {pendingDeleteCv && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          onClick={() => !deleting && setPendingDeleteCv(null)}
+        >
+          <div
+            className="surface-card w-full max-w-md p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-slate-900">Delete CV</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Are you sure you want to delete
+              <span className="font-semibold text-slate-800"> {pendingDeleteCv.title}</span>?
+              This action cannot be undone.
+            </p>
+
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setPendingDeleteCv(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
