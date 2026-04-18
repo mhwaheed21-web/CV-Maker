@@ -15,6 +15,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost",
         "http://127.0.0.1",
+        "http://localhost:80",
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost:3000",  # Alternative dev port
+        "http://localhost:8000",  # For testing
     ],
     allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,

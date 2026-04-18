@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getCV, downloadCV, previewCVUrl } from '../api/cvs'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { getCV, downloadCV, previewCVUrl } from '../api/cvs'
 
 export default function CVViewPage() {
   const { id } = useParams()
