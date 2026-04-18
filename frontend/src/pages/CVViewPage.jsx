@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { getCV, downloadCV, previewCVUrl } from '../api/cvs'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 
@@ -72,7 +71,7 @@ export default function CVViewPage() {
 
       <div style={styles.preview}>
         <iframe
-          src={`/api/v1/cvs/${id}/preview`}
+          src={previewUrl}
           style={styles.iframe}
           title="CV Preview"
         />

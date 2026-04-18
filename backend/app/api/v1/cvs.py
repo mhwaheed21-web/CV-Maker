@@ -12,6 +12,7 @@ from app.schemas.cv import (
 )
 from app.services import cv_service
 from app.services.pdf_service import render_cv_html, generate_pdf
+from app.utils.templates import is_valid_template_id, ALLOWED_TEMPLATE_IDS
 from typing import List
 import uuid
 
@@ -25,6 +26,15 @@ async def generate_cv(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    if not is_valid_template_id(payload.template_id):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Invalid template_id",
+                "allowed_template_ids": sorted(ALLOWED_TEMPLATE_IDS),
+            },
+        )
+
     title = payload.title or f"CV — {payload.job_description[:40]}..."
 
     cv = GeneratedCV(
