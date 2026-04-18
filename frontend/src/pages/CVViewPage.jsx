@@ -17,6 +17,7 @@ export default function CVViewPage() {
   const [regenerating, setRegenerating] = useState(false)
   const [regenerateError, setRegenerateError] = useState('')
   const [regenerateStatus, setRegenerateStatus] = useState('')
+  const [previewVersion, setPreviewVersion] = useState(0)
   const [formData, setFormData] = useState({ title: '', job_description: '', template_id: 'minimal' })
 
   useEffect(() => {
@@ -95,6 +96,7 @@ export default function CVViewPage() {
             // Refresh CV data
             const updatedCV = await getCV(id)
             setCv(updatedCV.data)
+            setPreviewVersion((currentVersion) => currentVersion + 1)
             isComplete = true
           } else if (status === 'failed') {
             setRegenerateError('Regeneration failed. Please try again.')
@@ -122,7 +124,7 @@ export default function CVViewPage() {
   if (loading) return <div style={{ padding: 40 }}>Loading CV...</div>
   if (!cv) return <div style={{ padding: 40 }}>CV not found</div>
 
-  const previewUrl = `${previewCVUrl(id)}?token=${localStorage.getItem('access_token')}`
+  const previewUrl = `${previewCVUrl(id)}?token=${localStorage.getItem('access_token')}&v=${previewVersion}`
 
   return (
     <div style={styles.container}>
