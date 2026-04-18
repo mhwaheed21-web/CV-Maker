@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getCV, downloadCV, previewCVUrl, regenerateCV, getCVStatus } from '../api/cvs'
+import { createChatMessage, getChatMessages } from '../api/chat'
 import { getTemplates } from '../api/templates'
 
 export default function CVViewPage() {
@@ -19,6 +20,11 @@ export default function CVViewPage() {
   const [regenerateStatus, setRegenerateStatus] = useState('')
   const [previewVersion, setPreviewVersion] = useState(0)
   const [formData, setFormData] = useState({ title: '', job_description: '', template_id: 'minimal' })
+  const [chatMessages, setChatMessages] = useState([])
+  const [chatInput, setChatInput] = useState('')
+  const [loadingChat, setLoadingChat] = useState(true)
+  const [sendingChat, setSendingChat] = useState(false)
+  const [chatError, setChatError] = useState('')
 
   useEffect(() => {
     getCV(id)
@@ -45,6 +51,19 @@ export default function CVViewPage() {
         setLoadingTemplates(false)
       })
   }, [])
+
+  useEffect(() => {
+    getChatMessages(id)
+      .then((res) => {
+        setChatMessages(res.data)
+        setLoadingChat(false)
+      })
+      .catch((err) => {
+        console.error('Failed to load chat history:', err)
+        setChatError('Failed to load chat history')
+        setLoadingChat(false)
+      })
+  }, [id])
 
   const handleDownload = async () => {
     setDownloading(true)
@@ -121,6 +140,38 @@ export default function CVViewPage() {
     }
   }
 
+  const handleSendChatMessage = async () => {
+    const content = chatInput.trim()
+    if (!content || sendingChat) {
+      return
+    }
+
+    setSendingChat(true)
+    setChatError('')
+
+    try {
+      const res = await createChatMessage(id, {
+        content,
+        role: 'user',
+      })
+
+      setChatMessages((currentMessages) => [...currentMessages, res.data])
+      setChatInput('')
+    } catch (err) {
+      console.error('Failed to send chat message:', err)
+      setChatError(err.response?.data?.detail || 'Failed to send message')
+    } finally {
+      setSendingChat(false)
+    }
+  }
+
+  const handleChatKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      handleSendChatMessage()
+    }
+  }
+
   if (loading) return <div style={{ padding: 40 }}>Loading CV...</div>
   if (!cv) return <div style={{ padding: 40 }}>CV not found</div>
 
@@ -160,6 +211,57 @@ export default function CVViewPage() {
         >
           Regenerate
         </button>
+
+        <section style={styles.chatSection}>
+          <div style={styles.chatHeader}>
+            <h3 style={styles.chatTitle}>Chat History</h3>
+            <p style={styles.chatSubtitle}>Messages are stored with this CV.</p>
+          </div>
+
+          <div style={styles.chatList}>
+            {loadingChat ? (
+              <p style={styles.chatPlaceholder}>Loading chat...</p>
+            ) : chatMessages.length === 0 ? (
+              <p style={styles.chatPlaceholder}>No messages yet. Start the conversation below.</p>
+            ) : (
+              chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  style={{
+                    ...styles.chatMessage,
+                    ...(message.role === 'user' ? styles.chatMessageUser : styles.chatMessageAssistant),
+                  }}
+                >
+                  <div style={styles.chatMessageMeta}>
+                    <span>{message.role}</span>
+                    <span>{new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <div style={styles.chatMessageContent}>{message.content}</div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div style={styles.chatComposer}>
+            <textarea
+              style={styles.chatTextarea}
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={handleChatKeyDown}
+              placeholder="Ask a follow-up question or note a change..."
+              rows={4}
+              disabled={sendingChat}
+            />
+            {chatError && <p style={styles.chatError}>{chatError}</p>}
+            <button
+              style={{ ...styles.chatSendBtn, opacity: sendingChat ? 0.7 : 1 }}
+              onClick={handleSendChatMessage}
+              disabled={sendingChat || !chatInput.trim()}
+            >
+              {sendingChat ? 'Sending...' : 'Send Message'}
+            </button>
+          </div>
+        </section>
 
         {showRegenerateModal && (
           <div style={styles.modalOverlay} onClick={() => !regenerating && setShowRegenerateModal(false)}>
@@ -255,6 +357,21 @@ const styles = {
   jdText: { fontSize: '12px', color: '#666', lineHeight: '1.5', marginTop: '4px' },
   downloadBtn: { padding: '12px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
   regenerateBtn: { padding: '12px', borderRadius: '8px', backgroundColor: '#7c3aed', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
+  chatSection: { border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', backgroundColor: '#fafafa', display: 'flex', flexDirection: 'column', gap: '12px' },
+  chatHeader: { display: 'flex', flexDirection: 'column', gap: '4px' },
+  chatTitle: { margin: 0, fontSize: '15px', fontWeight: '700', color: '#111827' },
+  chatSubtitle: { margin: 0, fontSize: '12px', color: '#6b7280' },
+  chatList: { display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '260px', overflowY: 'auto', paddingRight: '4px' },
+  chatPlaceholder: { margin: 0, fontSize: '13px', color: '#6b7280', lineHeight: '1.5' },
+  chatMessage: { padding: '10px 12px', borderRadius: '10px', border: '1px solid #e5e7eb', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', gap: '6px' },
+  chatMessageUser: { borderColor: '#c7d2fe', backgroundColor: '#eef2ff' },
+  chatMessageAssistant: { borderColor: '#d1d5db', backgroundColor: '#f9fafb' },
+  chatMessageMeta: { display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#6b7280' },
+  chatMessageContent: { fontSize: '13px', color: '#111827', lineHeight: '1.5', whiteSpace: 'pre-wrap' },
+  chatComposer: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  chatTextarea: { width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' },
+  chatError: { margin: 0, color: '#dc2626', fontSize: '13px' },
+  chatSendBtn: { padding: '10px 14px', borderRadius: '8px', backgroundColor: '#111827', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
   preview: { flex: 1, padding: '24px', overflow: 'hidden' },
   iframe: { width: '100%', height: '100%', border: 'none', borderRadius: '8px', boxShadow: '0 2px 16px rgba(0,0,0,0.1)', backgroundColor: '#fff' },
   
