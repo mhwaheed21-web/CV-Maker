@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 9pt;
+    color: #2c3e50;
+    line-height: 1.6;
+    background: #fff;
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px 40px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 16px;
+    border-bottom: 2px solid #34495e;
+    padding-bottom: 12px;
+  }
+
+  .name {
+    font-size: 20pt;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+  }
+
+  .contact-row {
+    font-size: 8pt;
+    color: #555;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Summary */
+  .summary {
+    margin-bottom: 14px;
+    font-size: 9.5pt;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 12px;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    font-size: 10pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1a1a1a;
+    border-left: 3px solid #e74c3c;
+    padding-left: 8px;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* Items */
+  .item {
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+  }
+
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+  }
+
+  .item-heading {
+    font-size: 9.5pt;
+    font-weight: bold;
+    color: #1a1a1a;
+  }
+
+  .item-subheading {
+    font-size: 8pt;
+    color: #666;
+  }
+
+  /* Bullets */
+  .bullets {
+    margin-top: 2px;
+    padding-left: 12px;
+    list-style-type: none;
+  }
+
+  .bullets li {
+    font-size: 8.5pt;
+    margin-bottom: 1px;
+    color: #2c3e50;
+  }
+
+  .bullets li:before {
+    content: "» ";
+    color: #e74c3c;
+    margin-right: 4px;
+  }
+
+  /* Skills special layout */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .skill-group {
+    margin-bottom: 4px;
+  }
+
+  .skill-group-title {
+    font-size: 8.5pt;
+    font-weight: bold;
+    color: #e74c3c;
+    margin-bottom: 2px;
+  }
+
+  .skill-list {
+    font-size: 8.5pt;
+    color: #2c3e50;
+  }
+
+  @page {
+    margin: 15mm;
+    size: A4;
+  }
+
+  @media print {
+    body { margin: 0; }
+    .page { padding: 0; max-width: 100%; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="name">{{ full_name }}</div>
+    <div class="contact-row">
+      {% if email %}<span>{{ email }}</span>{% endif %}
+      {% if phone %}<span>{{ phone }}</span>{% endif %}
+      {% if location %}<span>{{ location }}</span>{% endif %}
+      {% if linkedin_url %}<span>{{ linkedin_url }}</span>{% endif %}
+      {% if portfolio_url %}<span>{{ portfolio_url }}</span>{% endif %}
+    </div>
+  </div>
+
+  <!-- Summary -->
+  {% if summary %}
+  <div class="summary">{{ summary }}</div>
+  {% endif %}
+
+  <!-- Sections -->
+  {% for section in sections %}
+  <div class="section">
+    <div class="section-title">{{ section['title'] }}</div>
+
+    {% if section['type'] == "skills" %}
+    <div class="skills-grid">
+      {% for item in section['items'] %}
+      <div class="skill-group">
+        {% if item['heading'] %}
+        <div class="skill-group-title">{{ item['heading'] }}</div>
+        {% endif %}
+        <div class="skill-list">{{ item['bullets'] | join(', ') }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    {% for item in section['items'] %}
+    <div class="item">
+      <div class="item-header">
+        <span class="item-heading">{{ item['heading'] }}</span>
+        {% if item['subheading'] %}
+        <span class="item-subheading">{{ item['subheading'] }}</span>
+        {% endif %}
+      </div>
+      {% if item['bullets'] %}
+      <ul class="bullets">
+        {% for bullet in item['bullets'] %}
+        <li>{{ bullet }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+  </div>
+  {% endfor %}
+
+</div>
+</body>
+</html>
