@@ -46,34 +46,57 @@ export default function PersonalInfoForm({ data }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <div style={styles.row}>
-        <input style={styles.input} name="phone" placeholder="Phone number" value={form.phone} onChange={handleChange} />
-        <input style={styles.input} name="location" placeholder="Location (e.g. Karachi, Pakistan)" value={form.location} onChange={handleChange} />
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="phone"
+          placeholder="Phone number"
+          value={form.phone}
+          onChange={handleChange}
+        />
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="location"
+          placeholder="Location (e.g. Karachi, Pakistan)"
+          value={form.location}
+          onChange={handleChange}
+        />
       </div>
-      <div style={styles.row}>
-        <input style={styles.input} name="linkedin_url" placeholder="LinkedIn URL" value={form.linkedin_url} onChange={handleChange} />
-        <input style={styles.input} name="portfolio_url" placeholder="Portfolio URL" value={form.portfolio_url} onChange={handleChange} />
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="linkedin_url"
+          placeholder="LinkedIn URL"
+          value={form.linkedin_url}
+          onChange={handleChange}
+        />
+        <input
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          name="portfolio_url"
+          placeholder="Portfolio URL"
+          value={form.portfolio_url}
+          onChange={handleChange}
+        />
       </div>
+
       <textarea
-        style={styles.textarea}
+        className="min-h-28 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
         name="professional_summary"
         placeholder="Professional summary..."
         value={form.professional_summary}
         onChange={handleChange}
         rows={4}
       />
-      <button style={styles.button} type="submit" disabled={saving}>
+
+      <button
+        className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+        type="submit"
+        disabled={saving}
+      >
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Personal Info'}
       </button>
     </form>
   )
-}
-
-const styles = {
-  form: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  row: { display: 'flex', gap: '12px' },
-  input: { flex: 1, padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
-  textarea: { padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', resize: 'vertical' },
-  button: { alignSelf: 'flex-start', padding: '10px 20px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', fontSize: '14px', cursor: 'pointer' },
 }

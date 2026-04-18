@@ -11,18 +11,21 @@ import CertificationsForm from '../components/profile/CertificationsForm'
 function Section({ title, children }) {
   const [open, setOpen] = useState(true)
   return (
-    <div style={styles.section}>
-      <button style={styles.sectionHeader} onClick={() => setOpen(!open)}>
+    <div className="surface-card mb-4 overflow-hidden">
+      <button
+        className="flex w-full items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 text-left text-base font-semibold text-slate-800 transition hover:bg-slate-100"
+        onClick={() => setOpen(!open)}
+      >
         <span>{title}</span>
-        <span>{open ? '▲' : '▼'}</span>
+        <span className="text-xs text-slate-500">{open ? '▲' : '▼'}</span>
       </button>
-      {open && <div style={styles.sectionBody}>{children}</div>}
+      {open && <div className="p-5">{children}</div>}
     </div>
   )
 }
 
 export default function ProfilePage() {
-  const { profile, setProfile, setLoading } = useProfileStore()
+  const { profile, setProfile } = useProfileStore()
   const [fetching, setFetching] = useState(true)
 
   useEffect(() => {
@@ -32,12 +35,30 @@ export default function ProfilePage() {
       .finally(() => setFetching(false))
   }, [])
 
-  if (fetching) return <div style={{ padding: 40 }}>Loading profile...</div>
+  if (fetching) {
+    return (
+      <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+        <div className="surface-card animate-pulse p-6">
+          <div className="mb-4 h-6 w-40 rounded bg-slate-200" />
+          <div className="mb-6 h-4 w-72 rounded bg-slate-200" />
+          <div className="space-y-3">
+            <div className="h-12 rounded-xl bg-slate-200" />
+            <div className="h-12 rounded-xl bg-slate-200" />
+            <div className="h-28 rounded-xl bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>My Profile</h2>
-      <p style={styles.subtitle}>Fill in your information. This is what the AI uses to generate your CVs.</p>
+    <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">My Profile</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Fill in your information. This is what the AI uses to generate your CVs.
+        </p>
+      </div>
 
       <Section title="Personal Information">
         <PersonalInfoForm data={profile?.personal} />
@@ -64,13 +85,4 @@ export default function ProfilePage() {
       </Section>
     </div>
   )
-}
-
-const styles = {
-  container: { padding: '24px', maxWidth: '860px', margin: '0 auto' },
-  title: { fontSize: '24px', marginBottom: '4px' },
-  subtitle: { color: '#666', fontSize: '14px', marginBottom: '24px' },
-  section: { marginBottom: '16px', border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' },
-  sectionHeader: { width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: '#f9fafb', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '600' },
-  sectionBody: { padding: '20px' },
 }
