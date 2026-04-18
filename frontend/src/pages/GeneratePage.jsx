@@ -76,46 +76,53 @@ export default function GeneratePage() {
   }
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Generate CV</h2>
-      <p style={styles.subtitle}>
-        Paste a job description below. The AI will tailor your CV to match it.
-      </p>
+    <div className="mx-auto w-full max-w-4xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Generate CV</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Paste a job description below. The AI will tailor your CV to match it.
+        </p>
+      </div>
 
-      <div style={styles.form}>
-        <label style={styles.label}>Select Template</label>
+      <div className="surface-card space-y-3 p-5 sm:p-6">
+        <label className="text-sm font-semibold text-slate-700">Select Template</label>
         {loadingTemplates ? (
-          <p style={styles.loadingText}>Loading templates...</p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-24 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
+            ))}
+          </div>
         ) : (
-          <div style={styles.templateGrid}>
+          <div className="mb-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((template) => (
               <div
                 key={template.id}
-                style={{
-                  ...styles.templateCard,
-                  ...(selectedTemplateId === template.id ? styles.templateCardSelected : {}),
-                }}
+                className={`rounded-xl border-2 p-4 transition ${
+                  selectedTemplateId === template.id
+                    ? 'border-brand-600 bg-brand-50 shadow-card'
+                    : 'border-slate-200 bg-slate-50 hover:border-brand-300'
+                }`}
                 onClick={() => setSelectedTemplateId(template.id)}
               >
-                <div style={styles.templateName}>{template.name}</div>
-                <div style={styles.templateDescription}>{template.description}</div>
+                <div className="mb-1 text-sm font-semibold text-slate-800">{template.name}</div>
+                <div className="text-xs leading-relaxed text-slate-500">{template.description}</div>
               </div>
             ))}
           </div>
         )}
 
-        <label style={styles.label}>CV Title (optional)</label>
+        <label className="text-sm font-semibold text-slate-700">CV Title (optional)</label>
         <input
-          style={styles.input}
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           placeholder="e.g. Senior Software Engineer at Google"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={loading}
         />
 
-        <label style={styles.label}>Job Description *</label>
+        <label className="text-sm font-semibold text-slate-700">Job Description *</label>
         <textarea
-          style={styles.textarea}
+          className="min-h-64 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           placeholder="Paste the full job description here..."
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
@@ -123,17 +130,19 @@ export default function GeneratePage() {
           disabled={loading}
         />
 
-        {error && <p style={styles.error}>{error}</p>}
+        {error && (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        )}
 
         {loading && (
-          <div style={styles.loadingBox}>
-            <div style={styles.spinner} />
-            <p style={styles.loadingText}>{status}</p>
+          <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-brand-600" />
+            <p className="text-sm font-medium text-blue-700">{status}</p>
           </div>
         )}
 
         <button
-          style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
+          className="mt-1 inline-flex h-12 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
           onClick={handleGenerate}
           disabled={loading}
         >
@@ -142,24 +151,4 @@ export default function GeneratePage() {
       </div>
     </div>
   )
-}
-
-const styles = {
-  container: { padding: '32px', maxWidth: '720px', margin: '0 auto' },
-  title: { fontSize: '24px', marginBottom: '6px' },
-  subtitle: { color: '#666', fontSize: '14px', marginBottom: '28px' },
-  form: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  label: { fontSize: '13px', fontWeight: '600', color: '#374151' },
-  input: { padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
-  textarea: { padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', resize: 'vertical', lineHeight: '1.6' },
-  button: { padding: '14px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', fontSize: '15px', cursor: 'pointer', marginTop: '8px' },
-  error: { color: '#ef4444', fontSize: '13px', margin: 0 },
-  loadingBox: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', backgroundColor: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' },
-  spinner: { width: '18px', height: '18px', border: '2px solid #bfdbfe', borderTop: '2px solid #2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
-  loadingText: { color: '#1d4ed8', fontSize: '14px', margin: 0 },
-  templateGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginBottom: '16px' },
-  templateCard: { padding: '12px', borderRadius: '8px', border: '2px solid #e5e7eb', backgroundColor: '#f9fafb', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' },
-  templateCardSelected: { borderColor: '#2563eb', backgroundColor: '#eff6ff', boxShadow: '0 0 0 1px #2563eb' },
-  templateName: { fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '4px' },
-  templateDescription: { fontSize: '11px', color: '#6b7280', lineHeight: '1.3' },
 }
