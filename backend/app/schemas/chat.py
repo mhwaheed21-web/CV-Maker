@@ -24,3 +24,4 @@ class ChatProcessResponse(BaseModel):
     user_message: ChatMessageResponse
     assistant_message: ChatMessageResponse
     cv_updated: bool
+    profile_updated: bool

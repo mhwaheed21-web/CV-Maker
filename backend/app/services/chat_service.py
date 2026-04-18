@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from email_validator import validate_email, EmailNotValidError
 
 from app.models.chat import CVChatMessage
 from app.services.cv_service import get_cv_by_id
@@ -81,18 +82,51 @@ async def process_chat_message(
         "sections": current_cv_content.get("sections", []),
     }
 
-    ai_result = await ai_service.generate_chat_edit(clean_current_cv, clean_content)
+    profile = await get_or_create_profile(db, current_user.id)
+    current_contact_info = {
+        "email": current_user.email,
+        "phone": profile.phone,
+        "location": profile.location,
+        "linkedin_url": profile.linkedin_url,
+        "portfolio_url": profile.portfolio_url,
+    }
+
+    ai_result = await ai_service.generate_chat_action(clean_current_cv, current_contact_info, clean_content)
     assistant_reply = ai_result.get("assistant_reply") or "I reviewed your request."
+    target = ai_result.get("target") or "none"
     ai_cv_updated = bool(ai_result.get("cv_updated"))
     proposed_content = ai_result.get("updated_cv_content") or clean_current_cv
+    proposed_profile_updates = ai_result.get("profile_updates") or {}
 
     summary = proposed_content.get("summary")
     sections = proposed_content.get("sections")
     valid_shape = isinstance(summary, str) and isinstance(sections, list)
 
-    cv_updated = ai_cv_updated and valid_shape
+    cv_updated = target == "cv_content" and ai_cv_updated and valid_shape
+    profile_updated = False
+
+    if target == "profile":
+        allowed_profile_fields = ["phone", "location", "linkedin_url", "portfolio_url"]
+
+        email_update = proposed_profile_updates.get("email")
+        if isinstance(email_update, str) and email_update.strip() and email_update.strip() != current_user.email:
+            try:
+                normalized_email = validate_email(email_update.strip(), check_deliverability=False).normalized
+                current_user.email = normalized_email
+                profile_updated = True
+            except EmailNotValidError:
+                assistant_reply = "I could not update the email because the format looks invalid."
+
+        for field in allowed_profile_fields:
+            new_value = proposed_profile_updates.get(field)
+            if isinstance(new_value, str):
+                new_value = new_value.strip()
+            if isinstance(new_value, str) and new_value:
+                if getattr(profile, field) != new_value:
+                    setattr(profile, field, new_value)
+                    profile_updated = True
+
     if cv_updated:
-        profile = await get_or_create_profile(db, current_user.id)
         user_dict = {
             "full_name": current_user.full_name,
             "email": current_user.email,
@@ -126,4 +160,5 @@ async def process_chat_message(
         "user_message": user_message,
         "assistant_message": assistant_message,
         "cv_updated": cv_updated,
+        "profile_updated": profile_updated,
     }

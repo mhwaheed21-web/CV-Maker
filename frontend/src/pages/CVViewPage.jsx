@@ -155,7 +155,7 @@ export default function CVViewPage() {
         role: 'user',
       })
 
-      const { user_message, assistant_message, cv_updated } = res.data
+      const { user_message, assistant_message, cv_updated, profile_updated } = res.data
 
       setChatMessages((currentMessages) => [
         ...currentMessages,
@@ -163,7 +163,7 @@ export default function CVViewPage() {
         assistant_message,
       ])
 
-      if (cv_updated) {
+      if (cv_updated || profile_updated) {
         const updatedCV = await getCV(id)
         setCv(updatedCV.data)
         setPreviewVersion((currentVersion) => currentVersion + 1)
