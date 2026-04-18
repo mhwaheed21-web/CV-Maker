@@ -34,13 +34,20 @@ export default function RegisterPage() {
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>CV Maker</h1>
-        <h2 style={styles.subtitle}>Create your account</h2>
-        <form onSubmit={handleSubmit} style={styles.form}>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-white to-cyan-50 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute -left-24 top-12 h-64 w-64 rounded-full bg-cyan-200/40 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-12 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
+
+      <div className="surface-card relative z-10 w-full max-w-md p-8 sm:p-10">
+        <div className="mb-8 text-center">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-600">CV Maker</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Create Account</h1>
+          <h2 className="mt-2 text-sm font-medium text-slate-500">Start building tailored CVs</h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
           <input
-            style={styles.input}
+            className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
             type="text"
             name="full_name"
             placeholder="Full Name"
@@ -49,7 +56,7 @@ export default function RegisterPage() {
             required
           />
           <input
-            style={styles.input}
+            className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
             type="email"
             name="email"
             placeholder="Email"
@@ -58,7 +65,7 @@ export default function RegisterPage() {
             required
           />
           <input
-            style={styles.input}
+            className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
             type="password"
             name="password"
             placeholder="Password"
@@ -66,40 +73,29 @@ export default function RegisterPage() {
             onChange={handleChange}
             required
           />
-          {error && <p style={styles.error}>{error}</p>}
-          <button style={styles.button} type="submit" disabled={loading}>
+
+          {error && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+
+          <button
+            className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            type="submit"
+            disabled={loading}
+          >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
-        <p style={styles.link}>
-          Already have an account? <Link to="/login">Sign in</Link>
+
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Already have an account?{' '}
+          <Link className="font-semibold text-brand-700 transition hover:text-brand-600" to="/login">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>
   )
-}
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  card: {
-    backgroundColor: '#fff',
-    padding: '40px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-    width: '100%',
-    maxWidth: '400px',
-  },
-  title: { textAlign: 'center', marginBottom: '4px', fontSize: '24px' },
-  subtitle: { textAlign: 'center', marginBottom: '24px', fontSize: '16px', color: '#666', fontWeight: 'normal' },
-  form: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  input: { padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px' },
-  button: { padding: '12px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#fff', border: 'none', fontSize: '14px', cursor: 'pointer' },
-  error: { color: 'red', fontSize: '13px', margin: '0' },
-  link: { textAlign: 'center', marginTop: '16px', fontSize: '14px' },
 }
