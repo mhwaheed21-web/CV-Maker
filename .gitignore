@@ -23,3 +23,5 @@ frontend/.vite/
 
 # VSCode
 .vscode/
+
+*.md
