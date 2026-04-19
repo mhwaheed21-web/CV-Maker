@@ -192,17 +192,17 @@ export default function CVViewPage() {
       <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[280px_minmax(0,1fr)_340px]">
           <div className="surface-card animate-pulse p-5">
-            <div className="mb-3 h-10 rounded-xl bg-slate-200" />
-            <div className="mb-2 h-5 w-36 rounded bg-slate-200" />
-            <div className="mb-2 h-3 w-24 rounded bg-slate-200" />
-            <div className="h-24 rounded bg-slate-200" />
+            <div className="mb-3 h-10 rounded-xl2 bg-ubuntu-surfaceAlt" />
+            <div className="mb-2 h-5 w-36 rounded bg-ubuntu-surfaceAlt" />
+            <div className="mb-2 h-3 w-24 rounded bg-ubuntu-surfaceAlt" />
+            <div className="h-24 rounded bg-ubuntu-surfaceAlt" />
           </div>
           <div className="surface-card animate-pulse p-5">
-            <div className="h-[70vh] rounded-xl bg-slate-200" />
+            <div className="h-[70vh] rounded-xl2 bg-ubuntu-surfaceAlt" />
           </div>
           <div className="surface-card hidden animate-pulse p-5 xl:block">
-            <div className="mb-2 h-5 w-32 rounded bg-slate-200" />
-            <div className="h-[70vh] rounded-xl bg-slate-200" />
+            <div className="mb-2 h-5 w-32 rounded bg-ubuntu-surfaceAlt" />
+            <div className="h-[70vh] rounded-xl2 bg-ubuntu-surfaceAlt" />
           </div>
         </div>
       </div>
@@ -213,10 +213,10 @@ export default function CVViewPage() {
     return (
       <div className="mx-auto w-full max-w-4xl p-6">
         <div className="surface-card p-6 text-center">
-          <p className="text-base font-semibold text-slate-900">CV not found</p>
-          <p className="mt-2 text-sm text-slate-500">This CV may have been deleted or is inaccessible.</p>
+          <p className="text-base font-semibold text-ubuntu-text">CV not found</p>
+          <p className="mt-2 text-sm text-ubuntu-muted">This CV may have been deleted or is inaccessible.</p>
           <button
-            className="mt-4 inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700"
+            className="mt-4 inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl2 bg-brand-500 px-4 text-sm font-semibold text-white shadow-soft transition-all duration-250 ease-in-out hover:bg-brand-600"
             onClick={() => navigate('/dashboard', { state: { page: from } })}
           >
             Back to Dashboard
@@ -230,22 +230,22 @@ export default function CVViewPage() {
 
   const statusBadgeClass =
     cv.status === 'complete'
-      ? 'border-green-200 bg-green-50 text-green-700'
+      ? 'border-green-400/40 bg-green-500/10 text-green-200'
       : cv.status === 'failed'
-        ? 'border-red-200 bg-red-50 text-red-700'
-        : 'border-amber-200 bg-amber-50 text-amber-700'
+        ? 'border-red-400/40 bg-red-500/10 text-red-200'
+        : 'border-amber-400/40 bg-amber-500/10 text-amber-200'
 
   return (
     <div className="mx-auto w-full max-w-[1800px] p-3 sm:p-4 lg:p-6">
       <div className="mb-3 flex items-center justify-between xl:hidden">
         <button
-          className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-3 text-sm font-medium text-ubuntu-muted transition-all duration-250 ease-in-out hover:text-ubuntu-text"
           onClick={() => navigate('/dashboard', { state: { page: from } })}
         >
           ← Back
         </button>
         <button
-          className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl bg-slate-900 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl2 bg-brand-500 px-3 text-sm font-semibold text-white shadow-soft transition-all duration-250 ease-in-out hover:bg-brand-600"
           onClick={() => setShowMobileChat(true)}
         >
           Open Chat
@@ -255,35 +255,35 @@ export default function CVViewPage() {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[280px_minmax(0,1fr)_340px]">
         <aside className="surface-card h-fit space-y-4 p-4">
           <button
-            className="hidden h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 xl:inline-flex"
+            className="hidden h-10 min-w-[44px] items-center justify-center rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-3 text-sm font-medium text-ubuntu-muted transition-all duration-250 ease-in-out hover:text-ubuntu-text xl:inline-flex"
             onClick={() => navigate('/dashboard', { state: { page: from } })}
           >
             ← Back
           </button>
 
           <div>
-            <h2 className="line-clamp-2 text-lg font-bold text-slate-900">{cv.title}</h2>
+            <h2 className="line-clamp-2 text-lg font-bold text-ubuntu-text">{cv.title}</h2>
             <div className="mt-3 space-y-2 text-xs">
               <div>
-                <p className="mb-1 font-semibold uppercase tracking-wide text-slate-500">Status</p>
+                <p className="mb-1 font-semibold uppercase tracking-wide text-ubuntu-muted">Status</p>
                 <span className={`inline-flex rounded-full border px-2.5 py-1 font-semibold uppercase ${statusBadgeClass}`}>
                   {cv.status}
                 </span>
               </div>
               <div>
-                <p className="mb-1 font-semibold uppercase tracking-wide text-slate-500">Created</p>
-                <p className="text-sm text-slate-700">{new Date(cv.created_at).toLocaleDateString()}</p>
+                <p className="mb-1 font-semibold uppercase tracking-wide text-ubuntu-muted">Created</p>
+                <p className="text-sm text-ubuntu-text">{new Date(cv.created_at).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="mb-1 font-semibold uppercase tracking-wide text-slate-500">Job Description</p>
-                <p className="line-clamp-[12] text-sm leading-relaxed text-slate-600">{cv.job_description}</p>
+                <p className="mb-1 font-semibold uppercase tracking-wide text-ubuntu-muted">Job Description</p>
+                <p className="line-clamp-[12] text-sm leading-relaxed text-ubuntu-muted">{cv.job_description}</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
             <button
-              className="inline-flex h-11 min-w-[44px] w-full items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="inline-flex h-11 min-w-[44px] w-full items-center justify-center rounded-xl2 bg-brand-500 px-4 text-sm font-semibold text-white shadow-soft transition-all duration-250 ease-in-out hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-ubuntu-surfaceAlt"
               onClick={handleDownload}
               disabled={downloading}
             >
@@ -291,7 +291,7 @@ export default function CVViewPage() {
             </button>
 
             <button
-              className="inline-flex h-11 min-w-[44px] w-full items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="inline-flex h-11 min-w-[44px] w-full items-center justify-center rounded-xl2 border border-brand-500 bg-transparent px-4 text-sm font-semibold text-brand-500 transition-all duration-250 ease-in-out hover:bg-brand-500/10 disabled:cursor-not-allowed disabled:border-ubuntu-border disabled:text-ubuntu-muted"
               onClick={() => setShowRegenerateModal(true)}
               disabled={regenerating}
             >
@@ -302,10 +302,10 @@ export default function CVViewPage() {
 
         <section className="surface-card min-h-[75vh] p-3 sm:p-4">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Live Preview</p>
-            <p className="text-xs text-slate-400">Version {previewVersion + 1}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ubuntu-muted">Live Preview</p>
+            <p className="text-xs text-ubuntu-muted/80">Version {previewVersion + 1}</p>
           </div>
-          <div className="h-[72vh] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="h-[72vh] overflow-hidden rounded-xl2 border border-ubuntu-border bg-white shadow-soft">
             <iframe src={previewUrl} className="h-full w-full" title="CV Preview" />
           </div>
         </section>
@@ -326,13 +326,13 @@ export default function CVViewPage() {
 
       {showMobileChat && (
         <div
-          className="fixed inset-0 z-50 flex bg-slate-950/45 p-3 xl:hidden"
+          className="fixed inset-0 z-50 flex bg-black/70 p-3 xl:hidden"
           onClick={() => setShowMobileChat(false)}
         >
           <div className="ml-auto flex h-full w-full max-w-md flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="mb-2 flex justify-end">
               <button
-                className="inline-flex h-9 min-w-[44px] items-center justify-center rounded-lg bg-white px-3 text-xs font-semibold text-slate-700"
+                className="inline-flex h-9 min-w-[44px] items-center justify-center rounded-xl2 border border-ubuntu-border bg-ubuntu-surface px-3 text-xs font-semibold text-ubuntu-muted"
                 onClick={() => setShowMobileChat(false)}
               >
                 Close
@@ -356,28 +356,28 @@ export default function CVViewPage() {
 
       {showRegenerateModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
           onClick={() => !regenerating && setShowRegenerateModal(false)}
         >
           <div
             className="surface-card max-h-[92vh] w-full max-w-2xl overflow-y-auto p-5 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold text-slate-900">Regenerate CV</h3>
+            <h3 className="text-xl font-bold text-ubuntu-text">Regenerate CV</h3>
 
-            <label className="mt-4 mb-1 block text-sm font-semibold text-slate-700">CV Title</label>
+            <label className="mt-4 mb-1 block text-sm font-semibold text-ubuntu-muted">CV Title</label>
             <input
-              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-70"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               disabled={regenerating}
             />
 
-            <label className="mt-4 mb-1 block text-sm font-semibold text-slate-700">Template</label>
+            <label className="mt-4 mb-1 block text-sm font-semibold text-ubuntu-muted">Template</label>
             {loadingTemplates ? (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
+                  <div key={i} className="h-10 animate-pulse rounded-xl2 bg-ubuntu-surfaceAlt" />
                 ))}
               </div>
             ) : (
@@ -385,10 +385,10 @@ export default function CVViewPage() {
                 {templates.map((template) => (
                   <button
                     key={template.id}
-                    className={`rounded-lg border-2 px-3 py-2 text-xs font-semibold transition ${
+                    className={`rounded-xl2 border-2 px-3 py-2 text-xs font-semibold transition-all duration-250 ease-in-out ${
                       formData.template_id === template.id
-                        ? 'border-violet-500 bg-violet-50 text-violet-700'
-                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-violet-300'
+                        ? 'border-brand-500 bg-brand-500/15 text-brand-100'
+                        : 'border-ubuntu-border bg-ubuntu-surfaceAlt text-ubuntu-muted hover:border-brand-500/40 hover:text-ubuntu-text'
                     }`}
                     onClick={() => !regenerating && setFormData({ ...formData, template_id: template.id })}
                   >
@@ -398,9 +398,9 @@ export default function CVViewPage() {
               </div>
             )}
 
-            <label className="mt-4 mb-1 block text-sm font-semibold text-slate-700">Job Description</label>
+            <label className="mt-4 mb-1 block text-sm font-semibold text-ubuntu-muted">Job Description</label>
             <textarea
-              className="min-h-40 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              className="min-h-40 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 py-3 text-sm leading-relaxed text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-70"
               value={formData.job_description}
               onChange={(e) => setFormData({ ...formData, job_description: e.target.value })}
               rows={6}
@@ -408,28 +408,28 @@ export default function CVViewPage() {
             />
 
             {regenerateError && (
-              <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p className="mt-3 rounded-xl2 border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
                 {regenerateError}
               </p>
             )}
 
             {regenerating && (
-              <div className="mt-3 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-brand-600" />
-                <p className="text-sm font-medium text-blue-700">{regenerateStatus}</p>
+              <div className="mt-3 flex items-center gap-3 rounded-xl2 border border-brand-400/40 bg-brand-500/10 px-4 py-3">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-300/40 border-t-brand-500" />
+                <p className="text-sm font-medium text-brand-100">{regenerateStatus}</p>
               </div>
             )}
 
             {!regenerating && (
               <div className="mt-5 flex flex-wrap justify-end gap-2">
                 <button
-                  className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm font-medium text-ubuntu-muted transition-all duration-250 ease-in-out hover:text-ubuntu-text"
                   onClick={() => setShowRegenerateModal(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white transition hover:bg-violet-700"
+                  className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-xl2 bg-brand-500 px-4 text-sm font-semibold text-white shadow-soft transition-all duration-250 ease-in-out hover:bg-brand-600"
                   onClick={handleRegenerate}
                 >
                   Regenerate
