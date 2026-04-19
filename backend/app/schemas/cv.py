@@ -1,10 +1,10 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, constr
+from typing import Optional
 from datetime import datetime
 
 
 class CVGenerateRequest(BaseModel):
-    job_description: str
+    job_description: constr(strip_whitespace=True, min_length=50)
     template_id: str = "minimal"
     title: Optional[str] = None
 

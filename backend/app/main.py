@@ -1,10 +1,24 @@
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from app.api.v1.auth import router as auth_router
 from app.api.v1.chat import router as chat_router
 from app.api.v1.profile import router as profile_router
 from app.api.v1.cvs import router as cvs_router
 from app.api.v1.templates import router as templates_router
+from app.core.exceptions import (
+    AIServiceError,
+    CVGenerationError,
+    CVMakerError,
+    PDFRenderError,
+    TemplateNotFoundError,
+    build_error_payload,
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="CV Maker API",
@@ -32,6 +46,37 @@ app.include_router(chat_router, prefix="/api/v1")
 app.include_router(profile_router, prefix="/api/v1")
 app.include_router(cvs_router, prefix="/api/v1")
 app.include_router(templates_router, prefix="/api/v1")
+
+
+@app.exception_handler(CVMakerError)
+async def handle_domain_error(_: Request, exc: CVMakerError):
+    return JSONResponse(status_code=exc.status_code, content=build_error_payload(exc))
+
+
+@app.exception_handler(HTTPException)
+async def handle_http_exception(_: Request, exc: HTTPException):
+    detail = exc.detail if isinstance(exc.detail, (dict, list, str)) else str(exc.detail)
+    content = {"detail": detail}
+    if isinstance(exc.detail, dict) and "error_type" not in content:
+        content.update(exc.detail)
+    return JSONResponse(status_code=exc.status_code, content=content)
+
+
+@app.exception_handler(RequestValidationError)
+async def handle_request_validation_error(_: Request, exc: RequestValidationError):
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+
+
+@app.exception_handler(Exception)
+async def handle_unhandled_exception(_: Request, exc: Exception):
+    logger.exception("Unhandled API error: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal server error.",
+            "error_type": "InternalServerError",
+        },
+    )
 
 
 @app.get("/")

@@ -8,6 +8,7 @@ python-jose[cryptography]
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
 openai
+tenacity
 weasyprint
 jinja2
 python-multipart

@@ -1,22 +1,38 @@
 import json
 from openai import AsyncOpenAI
+from openai import APIConnectionError, APIError, APITimeoutError, RateLimitError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from app.config import settings
 from app.utils.prompt_builder import SYSTEM_PROMPT, build_user_prompt, serialize_profile
+from app.core.exceptions import AIServiceError
 
 client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 
+@retry(
+    retry=retry_if_exception_type((RateLimitError, APIConnectionError, APITimeoutError, APIError)),
+    wait=wait_exponential(multiplier=1, min=1, max=8),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
+async def _create_chat_completion(**kwargs):
+    return await client.chat.completions.create(**kwargs)
+
+
 async def generate_cv_content(profile: dict, job_description: str) -> dict:
     serialized = serialize_profile(profile)
-    response = await client.chat.completions.create(
-        model="gpt-4o",
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_user_prompt(serialized, job_description)}
-        ]
-    )
-    return json.loads(response.choices[0].message.content)
+    try:
+        response = await _create_chat_completion(
+            model="gpt-4o",
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": build_user_prompt(serialized, job_description)},
+            ],
+        )
+        return json.loads(response.choices[0].message.content)
+    except json.JSONDecodeError as exc:
+        raise AIServiceError("AI returned invalid JSON content.") from exc
 
 
 async def generate_chat_action(cv_content: dict, contact_info: dict, user_message: str) -> dict:
@@ -62,12 +78,15 @@ USER_REQUEST:
 {user_message}
 """
 
-    response = await client.chat.completions.create(
-        model="gpt-4o",
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
-    return json.loads(response.choices[0].message.content)
+    try:
+        response = await _create_chat_completion(
+            model="gpt-4o",
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        return json.loads(response.choices[0].message.content)
+    except json.JSONDecodeError as exc:
+        raise AIServiceError("AI returned invalid JSON content.") from exc
