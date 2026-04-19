@@ -13,3 +13,6 @@ weasyprint
 jinja2
 python-multipart
 email-validator==2.2.0
+pytest
+pytest-asyncio
+httpx
