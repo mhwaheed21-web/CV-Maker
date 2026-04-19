@@ -20,19 +20,19 @@ function PublicRoute({ children }) {
 
 export default function App() {
   const { setUser, logout } = useAuthStore()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('access_token')))
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
-    if (token) {
-      getMe()
-        .then((res) => setUser(res.data))
-        .catch(() => logout())
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
+    if (!token) {
+      return
     }
-  }, [])
+
+    getMe()
+      .then((res) => setUser(res.data))
+      .catch(() => logout())
+      .finally(() => setLoading(false))
+  }, [logout, setUser])
 
   if (loading) {
     return (

@@ -89,7 +89,7 @@ export default function GeneratePage() {
         }
       }, 2000)
 
-    } catch (err) {
+    } catch {
       setLoading(false)
       setStatus('')
     }

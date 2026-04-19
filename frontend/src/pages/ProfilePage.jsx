@@ -33,7 +33,7 @@ export default function ProfilePage() {
       .then((res) => setProfile(res.data))
       .catch(console.error)
       .finally(() => setFetching(false))
-  }, [])
+  }, [setProfile])
 
   if (fetching) {
     return (
