@@ -2,21 +2,52 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { login as loginApi, getMe } from '../api/auth'
 import useAuthStore from '../store/authStore'
+import useToastStore from '../store/toastStore'
+import { Button, Input } from '../components/common'
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuthStore()
+  const { success } = useToastStore()
   const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
+  const validate = (values) => {
+    const nextErrors = {}
+
+    if (!values.email.trim()) {
+      nextErrors.email = 'Email is required.'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+      nextErrors.email = 'Enter a valid email address.'
+    }
+
+    if (!values.password) {
+      nextErrors.password = 'Password is required.'
+    } else if (values.password.length < 8) {
+      nextErrors.password = 'Password must be at least 8 characters.'
+    }
+
+    return nextErrors
+  }
+
+  const canSubmit = Object.keys(validate(form)).length === 0 && !loading
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    const nextForm = { ...form, [e.target.name]: e.target.value }
+    setForm(nextForm)
+    setErrors((currentErrors) => ({ ...currentErrors, [e.target.name]: undefined }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
+    const nextErrors = validate(form)
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
     setLoading(true)
     try {
       const res = await loginApi(form)
@@ -25,9 +56,8 @@ export default function LoginPage() {
       localStorage.setItem('refresh_token', refresh_token)
       const meRes = await getMe()
       login(meRes.data, access_token, refresh_token)
+      success('Signed in', 'Welcome back to CV Maker.')
       navigate('/dashboard')
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -46,38 +76,26 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          <Input
             type="email"
             name="email"
             placeholder="Email"
             value={form.email}
             onChange={handleChange}
-            required
+            error={errors.email}
           />
-          <input
-            className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          <Input
             type="password"
             name="password"
             placeholder="Password"
             value={form.password}
             onChange={handleChange}
-            required
+            error={errors.password}
           />
 
-          {error && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
-            </p>
-          )}
-
-          <button
-            className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+          <Button type="submit" loading={loading} className="mt-1 w-full" disabled={!canSubmit}>
+            Sign In
+          </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-600">

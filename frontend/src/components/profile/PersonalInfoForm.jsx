@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { updatePersonal } from '../../api/profile'
 import useProfileStore from '../../store/profileStore'
+import useToastStore from '../../store/toastStore'
 
 export default function PersonalInfoForm({ data }) {
   const { updatePersonal: updateStore } = useProfileStore()
+  const { success } = useToastStore()
   const [form, setForm] = useState({
     phone: '',
     location: '',
@@ -37,6 +39,7 @@ export default function PersonalInfoForm({ data }) {
       const res = await updatePersonal(form)
       updateStore(res.data)
       setSaved(true)
+      success('Personal info saved', 'Your profile details were updated successfully.')
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
       console.error(err)
