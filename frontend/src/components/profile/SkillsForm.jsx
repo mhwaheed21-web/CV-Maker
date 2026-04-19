@@ -1,20 +1,28 @@
 import { useState, useEffect } from 'react'
 import { upsertSkills } from '../../api/profile'
 import useProfileStore from '../../store/profileStore'
+import useToastStore from '../../store/toastStore'
 
 export default function SkillsForm({ data }) {
   const { updateSection } = useProfileStore()
+  const { success } = useToastStore()
   const [skills, setSkills] = useState(data || [])
   const [newSkill, setNewSkill] = useState({ name: '', category: 'technical', proficiency: '' })
+  const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => { setSkills(data || []) }, [data])
 
   const addSkill = () => {
-    if (!newSkill.name.trim()) return
+    if (!newSkill.name.trim()) {
+      setErrors({ name: 'Skill name is required.' })
+      return
+    }
+
     setSkills([...skills, { ...newSkill, id: `temp-${Date.now()}` }])
     setNewSkill({ name: '', category: 'technical', proficiency: '' })
+    setErrors({})
   }
 
   const removeSkill = (id) => setSkills(skills.filter((s) => s.id !== id))
@@ -27,6 +35,7 @@ export default function SkillsForm({ data }) {
       setSkills(res.data)
       updateSection('skills', res.data)
       setSaved(true)
+      success('Skills saved', 'Your skills were updated successfully.')
       setTimeout(() => setSaved(false), 2000)
     } catch (err) { console.error(err) }
     finally { setSaving(false) }
@@ -56,7 +65,12 @@ export default function SkillsForm({ data }) {
           className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
           placeholder="Skill name"
           value={newSkill.name}
-          onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+          onChange={(e) => {
+            setNewSkill({ ...newSkill, name: e.target.value })
+            if (errors.name) {
+              setErrors((currentErrors) => ({ ...currentErrors, name: undefined }))
+            }
+          }}
           onKeyDown={(e) => e.key === 'Enter' && addSkill()}
         />
         <select
@@ -75,6 +89,8 @@ export default function SkillsForm({ data }) {
           Add
         </button>
       </div>
+
+      {errors.name && <p className="mb-2 text-xs font-medium text-red-600">{errors.name}</p>}
 
       <button
         className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"

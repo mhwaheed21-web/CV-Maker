@@ -11,7 +11,7 @@ export default function Toast({ toast, onClose }) {
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{toast.title}</p>
-          {toast.message && <p className="mt-1 text-sm leading-relaxed opacity-90">{toast.message}</p>}
+          {toast.message && <p className="mt-1 whitespace-pre-line text-sm leading-relaxed opacity-90">{toast.message}</p>}
         </div>
         <button className="text-sm font-semibold opacity-70 transition hover:opacity-100" onClick={() => onClose(toast.id)}>
           ×

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, constr
 from typing import Optional, List
 
 
@@ -22,12 +22,12 @@ class ProfilePersonalResponse(BaseModel):
 
 
 class WorkExperienceCreate(BaseModel):
-    job_title: str
-    company_name: str
+    job_title: constr(strip_whitespace=True, min_length=1)
+    company_name: constr(strip_whitespace=True, min_length=1)
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     is_current: bool = False
-    responsibilities: Optional[List[str]] = []
+    responsibilities: List[str] = Field(default_factory=list)
     display_order: int = 0
 
 
@@ -40,8 +40,8 @@ class WorkExperienceResponse(WorkExperienceCreate):
 
 
 class EducationCreate(BaseModel):
-    degree: str
-    institution: str
+    degree: constr(strip_whitespace=True, min_length=1)
+    institution: constr(strip_whitespace=True, min_length=1)
     graduation_year: Optional[int] = None
     gpa: Optional[str] = None
     display_order: int = 0
@@ -56,7 +56,7 @@ class EducationResponse(EducationCreate):
 
 
 class SkillCreate(BaseModel):
-    name: str
+    name: constr(strip_whitespace=True, min_length=1)
     category: Optional[str] = None
     proficiency: Optional[str] = None
 
@@ -70,9 +70,9 @@ class SkillResponse(SkillCreate):
 
 
 class ProjectCreate(BaseModel):
-    name: str
+    name: constr(strip_whitespace=True, min_length=1)
     description: Optional[str] = None
-    technologies: Optional[List[str]] = []
+    technologies: List[str] = Field(default_factory=list)
     url: Optional[str] = None
     display_order: int = 0
 
@@ -86,7 +86,7 @@ class ProjectResponse(ProjectCreate):
 
 
 class CertificationCreate(BaseModel):
-    name: str
+    name: constr(strip_whitespace=True, min_length=1)
     issuer: Optional[str] = None
     issue_date: Optional[str] = None
     expiry_date: Optional[str] = None
@@ -102,8 +102,8 @@ class CertificationResponse(CertificationCreate):
 
 class FullProfileResponse(BaseModel):
     personal: Optional[ProfilePersonalResponse] = None
-    experience: List[WorkExperienceResponse] = []
-    education: List[EducationResponse] = []
-    skills: List[SkillResponse] = []
-    projects: List[ProjectResponse] = []
-    certifications: List[CertificationResponse] = []
+    experience: List[WorkExperienceResponse] = Field(default_factory=list)
+    education: List[EducationResponse] = Field(default_factory=list)
+    skills: List[SkillResponse] = Field(default_factory=list)
+    projects: List[ProjectResponse] = Field(default_factory=list)
+    certifications: List[CertificationResponse] = Field(default_factory=list)

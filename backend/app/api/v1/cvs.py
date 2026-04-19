@@ -31,6 +31,7 @@ async def generate_cv(
             status_code=422,
             detail={
                 "message": "Invalid template_id",
+                "error_type": "TemplateNotFoundError",
                 "allowed_template_ids": sorted(ALLOWED_TEMPLATE_IDS),
             },
         )
@@ -55,7 +56,7 @@ async def generate_cv(
         user_id=current_user.id,
         job_description=payload.job_description,
         template_id=payload.template_id,
-        db=db,
+        db=None,
         user=current_user,
     )
 
@@ -81,6 +82,7 @@ async def regenerate_cv_endpoint(
             status_code=422,
             detail={
                 "message": "Invalid template_id",
+                "error_type": "TemplateNotFoundError",
                 "allowed_template_ids": sorted(ALLOWED_TEMPLATE_IDS),
             },
         )

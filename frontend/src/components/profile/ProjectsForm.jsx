@@ -1,18 +1,24 @@
 import { useState } from 'react'
 import { addProject, updateProject, deleteProject } from '../../api/profile'
 import useProfileStore from '../../store/profileStore'
+import useToastStore from '../../store/toastStore'
 
 function ProjectItem({ item, onSave, onDelete }) {
   const [form, setForm] = useState({ ...item, technologies: item.technologies || [] })
   const [saving, setSaving] = useState(false)
   const [techInput, setTechInput] = useState('')
+  const [errors, setErrors] = useState({})
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const addTech = () => {
-    if (!techInput.trim()) return
+    if (!techInput.trim()) {
+      setErrors((currentErrors) => ({ ...currentErrors, technologies: 'Enter a technology name first.' }))
+      return
+    }
     setForm({ ...form, technologies: [...form.technologies, techInput.trim()] })
     setTechInput('')
+    setErrors((currentErrors) => ({ ...currentErrors, technologies: undefined }))
   }
 
   const removeTech = (index) => {
@@ -20,6 +26,18 @@ function ProjectItem({ item, onSave, onDelete }) {
   }
 
   const handleSave = async () => {
+    const nextErrors = {}
+
+    if (!form.name.trim()) {
+      nextErrors.name = 'Project name is required.'
+    }
+
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
     setSaving(true)
     await onSave(form)
     setSaving(false)
@@ -29,11 +47,18 @@ function ProjectItem({ item, onSave, onDelete }) {
     <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
+            errors.name ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          }`}
           name="name"
           placeholder="Project name"
           value={form.name}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e)
+            if (errors.name) {
+              setErrors((currentErrors) => ({ ...currentErrors, name: undefined }))
+            }
+          }}
         />
         <input
           className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
@@ -43,6 +68,8 @@ function ProjectItem({ item, onSave, onDelete }) {
           onChange={handleChange}
         />
       </div>
+
+      {errors.name && <p className="mb-2 text-xs font-medium text-red-600">{errors.name}</p>}
 
       <textarea
         className="mb-2 min-h-24 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
@@ -83,6 +110,8 @@ function ProjectItem({ item, onSave, onDelete }) {
         </button>
       </div>
 
+      {errors.technologies && <p className="mb-2 text-xs font-medium text-red-600">{errors.technologies}</p>}
+
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           className="min-h-[44px] rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
@@ -104,6 +133,7 @@ function ProjectItem({ item, onSave, onDelete }) {
 
 export default function ProjectsForm({ data }) {
   const { updateSection } = useProfileStore()
+  const { success } = useToastStore()
   const [items, setItems] = useState(data || [])
   const [adding, setAdding] = useState(false)
 
@@ -111,13 +141,18 @@ export default function ProjectsForm({ data }) {
     try {
       if (form.id) {
         const res = await updateProject(form.id, form)
-        setItems(items.map((i) => (i.id === form.id ? res.data : i)))
+        const updated = items.map((i) => (i.id === form.id ? res.data : i))
+        setItems(updated)
+        updateSection('projects', updated)
+        success('Project saved', 'Your project was updated successfully.')
       } else {
         const res = await addProject(form)
-        setItems([...items.filter((i) => i.id), res.data])
+        const updated = [...items.filter((i) => i.id), res.data]
+        setItems(updated)
+        updateSection('projects', updated)
         setAdding(false)
+        success('Project added', 'A new project was added to your profile.')
       }
-      updateSection('projects', items)
     } catch (err) { console.error(err) }
   }
 
@@ -127,6 +162,7 @@ export default function ProjectsForm({ data }) {
       const updated = items.filter((i) => i.id !== id)
       setItems(updated)
       updateSection('projects', updated)
+      success('Project deleted', 'The project was removed from your profile.')
     } catch (err) { console.error(err) }
   }
 

@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react'
 import { generateCV, getCVStatus } from '../api/cvs'
 import { getTemplates } from '../api/templates'
 import { useNavigate } from 'react-router-dom'
+import useToastStore from '../store/toastStore'
+import { Button } from '../components/common'
 
 export default function GeneratePage() {
   const navigate = useNavigate()
+  const { info, success, error: showError } = useToastStore()
   const [jobDescription, setJobDescription] = useState('')
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
   const [templates, setTemplates] = useState([])
   const [selectedTemplateId, setSelectedTemplateId] = useState('minimal')
   const [loadingTemplates, setLoadingTemplates] = useState(true)
@@ -26,14 +29,31 @@ export default function GeneratePage() {
       })
   }, [])
 
-  const handleGenerate = async () => {
+  const validate = () => {
+    const nextErrors = {}
+
     if (!jobDescription.trim()) {
-      setError('Please enter a job description')
+      nextErrors.job_description = 'Job description is required.'
+    } else if (jobDescription.trim().length < 50) {
+      nextErrors.job_description = 'Job description must be at least 50 characters.'
+    }
+
+    return nextErrors
+  }
+
+  const canSubmit = Object.keys(validate()).length === 0 && !loading
+
+  const handleGenerate = async () => {
+    const nextErrors = validate()
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
       return
     }
-    setError('')
+
     setLoading(true)
     setStatus('Starting generation...')
+    info('Generation started', 'Your CV is being tailored to the job description.')
 
     try {
       const res = await generateCV({
@@ -53,17 +73,18 @@ export default function GeneratePage() {
           if (currentStatus === 'complete') {
             clearInterval(poll)
             setLoading(false)
+            success('CV generated', 'Your tailored CV is ready to view.')
             navigate(`/cv/${cvId}`, { state: { from: 'generate' } })
           } else if (currentStatus === 'failed') {
             clearInterval(poll)
             setLoading(false)
-            setError('CV generation failed. Please try again.')
+            showError('Generation failed', 'CV generation failed. Please try again.')
             setStatus('')
           }
         } catch {
           clearInterval(poll)
           setLoading(false)
-          setError('Something went wrong. Please try again.')
+          showError('Generation error', 'Something went wrong. Please try again.')
           setStatus('')
         }
       }, 2000)
@@ -71,7 +92,6 @@ export default function GeneratePage() {
     } catch (err) {
       setLoading(false)
       setStatus('')
-      setError(err.response?.data?.detail || 'Generation failed')
     }
   }
 
@@ -122,16 +142,25 @@ export default function GeneratePage() {
 
         <label className="text-sm font-semibold text-slate-700">Job Description *</label>
         <textarea
-          className="min-h-64 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+          className={`min-h-64 w-full rounded-xl border bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100 ${
+            errors.job_description ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          }`}
           placeholder="Paste the full job description here..."
           value={jobDescription}
-          onChange={(e) => setJobDescription(e.target.value)}
+          onChange={(e) => {
+            setJobDescription(e.target.value)
+            if (errors.job_description) {
+              setErrors((currentErrors) => ({ ...currentErrors, job_description: undefined }))
+            }
+          }}
           rows={12}
           disabled={loading}
         />
 
-        {error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        {errors.job_description && (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {errors.job_description}
+          </p>
         )}
 
         {loading && (
@@ -141,13 +170,9 @@ export default function GeneratePage() {
           </div>
         )}
 
-        <button
-          className="mt-1 inline-flex h-12 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-          onClick={handleGenerate}
-          disabled={loading}
-        >
-          {loading ? 'Generating...' : 'Generate CV'}
-        </button>
+        <Button className="mt-1 w-full" onClick={handleGenerate} loading={loading} disabled={!canSubmit}>
+          Generate CV
+        </Button>
       </div>
     </div>
   )

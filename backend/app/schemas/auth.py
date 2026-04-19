@@ -1,15 +1,15 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, constr
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str
-    full_name: str
+    password: constr(strip_whitespace=True, min_length=8)
+    full_name: constr(strip_whitespace=True, min_length=1)
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: constr(strip_whitespace=True, min_length=1)
 
 
 class TokenResponse(BaseModel):

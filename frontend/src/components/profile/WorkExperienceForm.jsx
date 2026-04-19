@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { addExperience, updateExperience, deleteExperience } from '../../api/profile'
 import useProfileStore from '../../store/profileStore'
+import useToastStore from '../../store/toastStore'
 
 function ExperienceItem({ item, onSave, onDelete }) {
   const [form, setForm] = useState({ ...item })
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -26,6 +28,22 @@ function ExperienceItem({ item, onSave, onDelete }) {
   }
 
   const handleSave = async () => {
+    const nextErrors = {}
+
+    if (!form.job_title.trim()) {
+      nextErrors.job_title = 'Job title is required.'
+    }
+
+    if (!form.company_name.trim()) {
+      nextErrors.company_name = 'Company name is required.'
+    }
+
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
     setSaving(true)
     await onSave(form)
     setSaving(false)
@@ -35,20 +53,40 @@ function ExperienceItem({ item, onSave, onDelete }) {
     <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
+            errors.job_title ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          }`}
           name="job_title"
           placeholder="Job Title"
           value={form.job_title}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e)
+            if (errors.job_title) {
+              setErrors((currentErrors) => ({ ...currentErrors, job_title: undefined }))
+            }
+          }}
         />
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
+            errors.company_name ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          }`}
           name="company_name"
           placeholder="Company"
           value={form.company_name}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e)
+            if (errors.company_name) {
+              setErrors((currentErrors) => ({ ...currentErrors, company_name: undefined }))
+            }
+          }}
         />
       </div>
+      {(errors.job_title || errors.company_name) && (
+        <div className="mb-2 space-y-1">
+          {errors.job_title && <p className="text-xs font-medium text-red-600">{errors.job_title}</p>}
+          {errors.company_name && <p className="text-xs font-medium text-red-600">{errors.company_name}</p>}
+        </div>
+      )}
 
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
@@ -119,6 +157,7 @@ function ExperienceItem({ item, onSave, onDelete }) {
 
 export default function WorkExperienceForm({ data }) {
   const { updateSection } = useProfileStore()
+  const { success } = useToastStore()
   const [items, setItems] = useState(data || [])
   const [adding, setAdding] = useState(false)
 
@@ -126,13 +165,18 @@ export default function WorkExperienceForm({ data }) {
     try {
       if (form.id) {
         const res = await updateExperience(form.id, form)
-        setItems(items.map((i) => (i.id === form.id ? res.data : i)))
+        const updated = items.map((i) => (i.id === form.id ? res.data : i))
+        setItems(updated)
+        updateSection('experience', updated)
+        success('Work experience saved', 'Your work history was updated successfully.')
       } else {
         const res = await addExperience(form)
-        setItems([...items.filter((i) => i.id), res.data])
+        const updated = [...items.filter((i) => i.id), res.data]
+        setItems(updated)
+        updateSection('experience', updated)
         setAdding(false)
+        success('Work experience added', 'A new work experience entry was added.')
       }
-      updateSection('experience', items)
     } catch (err) { console.error(err) }
   }
 
@@ -142,6 +186,7 @@ export default function WorkExperienceForm({ data }) {
       const updated = items.filter((i) => i.id !== id)
       setItems(updated)
       updateSection('experience', updated)
+      success('Work experience deleted', 'The entry was removed from your profile.')
     } catch (err) { console.error(err) }
   }
 

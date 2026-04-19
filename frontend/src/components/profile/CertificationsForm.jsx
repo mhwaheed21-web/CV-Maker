@@ -1,14 +1,28 @@
 import { useState } from 'react'
 import { addCertification, updateCertification, deleteCertification } from '../../api/profile'
 import useProfileStore from '../../store/profileStore'
+import useToastStore from '../../store/toastStore'
 
 function CertItem({ item, onSave, onDelete }) {
   const [form, setForm] = useState({ ...item })
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSave = async () => {
+    const nextErrors = {}
+
+    if (!form.name.trim()) {
+      nextErrors.name = 'Certification name is required.'
+    }
+
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
     setSaving(true)
     await onSave(form)
     setSaving(false)
@@ -18,11 +32,18 @@ function CertItem({ item, onSave, onDelete }) {
     <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
+            errors.name ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          }`}
           name="name"
           placeholder="Certification name"
           value={form.name}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e)
+            if (errors.name) {
+              setErrors((currentErrors) => ({ ...currentErrors, name: undefined }))
+            }
+          }}
         />
         <input
           className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
@@ -32,6 +53,8 @@ function CertItem({ item, onSave, onDelete }) {
           onChange={handleChange}
         />
       </div>
+
+      {errors.name && <p className="mb-2 text-xs font-medium text-red-600">{errors.name}</p>}
 
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
@@ -71,6 +94,7 @@ function CertItem({ item, onSave, onDelete }) {
 
 export default function CertificationsForm({ data }) {
   const { updateSection } = useProfileStore()
+  const { success } = useToastStore()
   const [items, setItems] = useState(data || [])
   const [adding, setAdding] = useState(false)
 
@@ -78,13 +102,18 @@ export default function CertificationsForm({ data }) {
     try {
       if (form.id) {
         const res = await updateCertification(form.id, form)
-        setItems(items.map((i) => (i.id === form.id ? res.data : i)))
+        const updated = items.map((i) => (i.id === form.id ? res.data : i))
+        setItems(updated)
+        updateSection('certifications', updated)
+        success('Certification saved', 'Your certification was updated successfully.')
       } else {
         const res = await addCertification(form)
-        setItems([...items.filter((i) => i.id), res.data])
+        const updated = [...items.filter((i) => i.id), res.data]
+        setItems(updated)
+        updateSection('certifications', updated)
         setAdding(false)
+        success('Certification added', 'A new certification was added.')
       }
-      updateSection('certifications', items)
     } catch (err) { console.error(err) }
   }
 
@@ -94,6 +123,7 @@ export default function CertificationsForm({ data }) {
       const updated = items.filter((i) => i.id !== id)
       setItems(updated)
       updateSection('certifications', updated)
+      success('Certification deleted', 'The certification was removed from your profile.')
     } catch (err) { console.error(err) }
   }
 

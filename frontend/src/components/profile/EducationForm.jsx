@@ -1,14 +1,32 @@
 import { useState } from 'react'
 import { addEducation, updateEducation, deleteEducation } from '../../api/profile'
 import useProfileStore from '../../store/profileStore'
+import useToastStore from '../../store/toastStore'
 
 function EducationItem({ item, onSave, onDelete }) {
   const [form, setForm] = useState({ ...item })
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSave = async () => {
+    const nextErrors = {}
+
+    if (!form.degree.trim()) {
+      nextErrors.degree = 'Degree is required.'
+    }
+
+    if (!form.institution.trim()) {
+      nextErrors.institution = 'Institution is required.'
+    }
+
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
     setSaving(true)
     await onSave(form)
     setSaving(false)
@@ -18,20 +36,41 @@ function EducationItem({ item, onSave, onDelete }) {
     <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
+            errors.degree ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          }`}
           name="degree"
           placeholder="Degree (e.g. BSc Computer Science)"
           value={form.degree}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e)
+            if (errors.degree) {
+              setErrors((currentErrors) => ({ ...currentErrors, degree: undefined }))
+            }
+          }}
         />
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
+            errors.institution ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          }`}
           name="institution"
           placeholder="Institution"
           value={form.institution}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e)
+            if (errors.institution) {
+              setErrors((currentErrors) => ({ ...currentErrors, institution: undefined }))
+            }
+          }}
         />
       </div>
+
+      {(errors.degree || errors.institution) && (
+        <div className="mb-2 space-y-1">
+          {errors.degree && <p className="text-xs font-medium text-red-600">{errors.degree}</p>}
+          {errors.institution && <p className="text-xs font-medium text-red-600">{errors.institution}</p>}
+        </div>
+      )}
 
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
@@ -71,6 +110,7 @@ function EducationItem({ item, onSave, onDelete }) {
 
 export default function EducationForm({ data }) {
   const { updateSection } = useProfileStore()
+  const { success } = useToastStore()
   const [items, setItems] = useState(data || [])
   const [adding, setAdding] = useState(false)
 
@@ -78,13 +118,18 @@ export default function EducationForm({ data }) {
     try {
       if (form.id) {
         const res = await updateEducation(form.id, form)
-        setItems(items.map((i) => (i.id === form.id ? res.data : i)))
+        const updated = items.map((i) => (i.id === form.id ? res.data : i))
+        setItems(updated)
+        updateSection('education', updated)
+        success('Education saved', 'Your education details were updated successfully.')
       } else {
         const res = await addEducation(form)
-        setItems([...items.filter((i) => i.id), res.data])
+        const updated = [...items.filter((i) => i.id), res.data]
+        setItems(updated)
+        updateSection('education', updated)
         setAdding(false)
+        success('Education added', 'A new education entry was added.')
       }
-      updateSection('education', items)
     } catch (err) { console.error(err) }
   }
 
@@ -94,6 +139,7 @@ export default function EducationForm({ data }) {
       const updated = items.filter((i) => i.id !== id)
       setItems(updated)
       updateSection('education', updated)
+      success('Education deleted', 'The entry was removed from your profile.')
     } catch (err) { console.error(err) }
   }
 
