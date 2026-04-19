@@ -44,11 +44,11 @@ function ProjectItem({ item, onSave, onDelete }) {
   }
 
   return (
-    <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <div className="mb-3 rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt p-4">
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
-          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
-            errors.name ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          className={`h-11 w-full rounded-xl2 border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:ring-2 focus:ring-brand-500/20 ${
+            errors.name ? 'border-red-400 focus:border-red-500' : 'border-ubuntu-border focus:border-brand-500'
           }`}
           name="name"
           placeholder="Project name"
@@ -61,7 +61,7 @@ function ProjectItem({ item, onSave, onDelete }) {
           }}
         />
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           name="url"
           placeholder="URL (optional)"
           value={form.url || ''}
@@ -69,10 +69,10 @@ function ProjectItem({ item, onSave, onDelete }) {
         />
       </div>
 
-      {errors.name && <p className="mb-2 text-xs font-medium text-red-600">{errors.name}</p>}
+      {errors.name && <p className="mb-2 text-xs font-medium text-red-400">{errors.name}</p>}
 
       <textarea
-        className="mb-2 min-h-24 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+        className="mb-2 min-h-24 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surface px-4 py-3 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
         name="description"
         placeholder="Project description"
         value={form.description || ''}
@@ -84,10 +84,10 @@ function ProjectItem({ item, onSave, onDelete }) {
         {form.technologies.map((t, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700"
+            className="inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-100"
           >
             {t}
-            <button className="text-sky-600 transition hover:text-sky-800" onClick={() => removeTech(i)}>
+            <button className="text-brand-300 transition-all duration-250 ease-in-out hover:text-brand-100" onClick={() => removeTech(i)}>
               ✕
             </button>
           </span>
@@ -96,32 +96,32 @@ function ProjectItem({ item, onSave, onDelete }) {
 
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-[1fr_auto]">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           placeholder="Add technology"
           value={techInput}
           onChange={(e) => setTechInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addTech()}
         />
         <button
-          className="h-11 min-w-[44px] rounded-xl border border-slate-300 bg-slate-100 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+          className="h-11 min-w-[44px] rounded-xl2 border border-brand-500 bg-transparent px-4 text-sm font-semibold text-brand-400 transition-all duration-250 ease-in-out hover:bg-brand-500/10"
           onClick={addTech}
         >
           Add
         </button>
       </div>
 
-      {errors.technologies && <p className="mb-2 text-xs font-medium text-red-600">{errors.technologies}</p>}
+      {errors.technologies && <p className="mb-2 text-xs font-medium text-red-400">{errors.technologies}</p>}
 
       <div className="mt-3 flex flex-wrap gap-2">
         <button
-          className="min-h-[44px] rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="min-h-[44px] rounded-xl2 bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-all duration-250 ease-in-out hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-ubuntu-surface"
           onClick={handleSave}
           disabled={saving}
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
         <button
-          className="min-h-[44px] rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+          className="min-h-[44px] rounded-xl2 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-250 ease-in-out hover:bg-red-700"
           onClick={() => onDelete(item.id)}
         >
           Delete
@@ -176,7 +176,7 @@ export default function ProjectsForm({ data }) {
       {adding && <ProjectItem item={newItem} onSave={handleSave} onDelete={() => setAdding(false)} />}
       {!adding && (
         <button
-          className="min-h-[44px] rounded-xl border border-dashed border-brand-400 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+          className="min-h-[44px] rounded-xl2 border border-dashed border-brand-400 bg-brand-500/5 px-4 py-2 text-sm font-semibold text-brand-300 transition-all duration-250 ease-in-out hover:bg-brand-500/10"
           onClick={() => setAdding(true)}
         >
           + Add Project

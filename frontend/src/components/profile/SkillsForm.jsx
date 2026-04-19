@@ -47,11 +47,11 @@ export default function SkillsForm({ data }) {
         {skills.map((skill) => (
           <span
             key={skill.id}
-            className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+            className="inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-100"
           >
             {skill.name}
             <button
-              className="text-indigo-500 transition hover:text-indigo-700"
+              className="text-brand-300 transition-all duration-250 ease-in-out hover:text-brand-100"
               onClick={() => removeSkill(skill.id)}
             >
               ✕
@@ -62,7 +62,7 @@ export default function SkillsForm({ data }) {
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-[1fr_auto_auto]">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           placeholder="Skill name"
           value={newSkill.name}
           onChange={(e) => {
@@ -74,7 +74,7 @@ export default function SkillsForm({ data }) {
           onKeyDown={(e) => e.key === 'Enter' && addSkill()}
         />
         <select
-          className="h-11 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           value={newSkill.category}
           onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
         >
@@ -83,17 +83,17 @@ export default function SkillsForm({ data }) {
         </select>
 
         <button
-          className="h-11 min-w-[44px] rounded-xl border border-slate-300 bg-slate-100 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+          className="h-11 min-w-[44px] rounded-xl2 border border-brand-500 bg-transparent px-4 text-sm font-semibold text-brand-400 transition-all duration-250 ease-in-out hover:bg-brand-500/10"
           onClick={addSkill}
         >
           Add
         </button>
       </div>
 
-      {errors.name && <p className="mb-2 text-xs font-medium text-red-600">{errors.name}</p>}
+      {errors.name && <p className="mb-2 text-xs font-medium text-red-400">{errors.name}</p>}
 
       <button
-        className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl2 bg-brand-500 px-5 text-sm font-semibold text-white shadow-soft transition-all duration-250 ease-in-out hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-ubuntu-surface"
         onClick={handleSave}
         disabled={saving}
       >

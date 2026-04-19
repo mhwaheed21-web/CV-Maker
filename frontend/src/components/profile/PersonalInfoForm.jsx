@@ -52,14 +52,14 @@ export default function PersonalInfoForm({ data }) {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           name="phone"
           placeholder="Phone number"
           value={form.phone}
           onChange={handleChange}
         />
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           name="location"
           placeholder="Location (e.g. Karachi, Pakistan)"
           value={form.location}
@@ -69,14 +69,14 @@ export default function PersonalInfoForm({ data }) {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           name="linkedin_url"
           placeholder="LinkedIn URL"
           value={form.linkedin_url}
           onChange={handleChange}
         />
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           name="portfolio_url"
           placeholder="Portfolio URL"
           value={form.portfolio_url}
@@ -85,7 +85,7 @@ export default function PersonalInfoForm({ data }) {
       </div>
 
       <textarea
-        className="min-h-28 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+        className="min-h-28 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 py-3 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
         name="professional_summary"
         placeholder="Professional summary..."
         value={form.professional_summary}
@@ -94,7 +94,7 @@ export default function PersonalInfoForm({ data }) {
       />
 
       <button
-        className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-xl2 bg-brand-500 px-5 text-sm font-semibold text-white shadow-soft transition-all duration-250 ease-in-out hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-ubuntu-surfaceAlt"
         type="submit"
         disabled={saving}
       >

@@ -20,25 +20,25 @@ function PublicRoute({ children }) {
 
 export default function App() {
   const { setUser, logout } = useAuthStore()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('access_token')))
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
-    if (token) {
-      getMe()
-        .then((res) => setUser(res.data))
-        .catch(() => logout())
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
+    if (!token) {
+      return
     }
-  }, [])
+
+    getMe()
+      .then((res) => setUser(res.data))
+      .catch(() => logout())
+      .finally(() => setLoading(false))
+  }, [logout, setUser])
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-ubuntu-background p-4">
         <div className="surface-card w-full max-w-md p-6">
-          <div className="mb-4 h-6 w-32 rounded bg-slate-200" />
+          <div className="mb-4 h-6 w-32 rounded bg-ubuntu-surfaceAlt" />
           <Skeleton className="mb-3 h-11 w-full" />
           <Skeleton className="mb-3 h-11 w-full" />
           <Skeleton className="mb-4 h-11 w-40" />

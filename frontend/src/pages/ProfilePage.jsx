@@ -13,11 +13,11 @@ function Section({ title, children }) {
   return (
     <div className="surface-card mb-4 overflow-hidden">
       <button
-        className="flex w-full items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 text-left text-base font-semibold text-slate-800 transition hover:bg-slate-100"
+        className="flex w-full items-center justify-between border-b border-ubuntu-border bg-ubuntu-surfaceAlt px-5 py-4 text-left text-base font-semibold text-ubuntu-text transition-all duration-250 ease-in-out hover:border-brand-500/40"
         onClick={() => setOpen(!open)}
       >
         <span>{title}</span>
-        <span className="text-xs text-slate-500">{open ? '▲' : '▼'}</span>
+        <span className="text-xs text-brand-300">{open ? '▲' : '▼'}</span>
       </button>
       {open && <div className="p-5">{children}</div>}
     </div>
@@ -33,18 +33,18 @@ export default function ProfilePage() {
       .then((res) => setProfile(res.data))
       .catch(console.error)
       .finally(() => setFetching(false))
-  }, [])
+  }, [setProfile])
 
   if (fetching) {
     return (
       <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
         <div className="surface-card animate-pulse p-6">
-          <div className="mb-4 h-6 w-40 rounded bg-slate-200" />
-          <div className="mb-6 h-4 w-72 rounded bg-slate-200" />
+          <div className="mb-4 h-6 w-40 rounded bg-ubuntu-surfaceAlt" />
+          <div className="mb-6 h-4 w-72 rounded bg-ubuntu-surfaceAlt" />
           <div className="space-y-3">
-            <div className="h-12 rounded-xl bg-slate-200" />
-            <div className="h-12 rounded-xl bg-slate-200" />
-            <div className="h-28 rounded-xl bg-slate-200" />
+            <div className="h-12 rounded-xl2 bg-ubuntu-surfaceAlt" />
+            <div className="h-12 rounded-xl2 bg-ubuntu-surfaceAlt" />
+            <div className="h-28 rounded-xl2 bg-ubuntu-surfaceAlt" />
           </div>
         </div>
       </div>
@@ -54,8 +54,8 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">My Profile</h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <h2 className="text-3xl font-bold tracking-tight text-ubuntu-text">My Profile</h2>
+        <p className="mt-2 text-sm text-ubuntu-muted">
           Fill in your information. This is what the AI uses to generate your CVs.
         </p>
       </div>

@@ -4,11 +4,18 @@
 
 @layer base {
   :root {
-    --brand-50: #eff6ff;
-    --brand-100: #dbeafe;
-    --brand-500: #3b82f6;
-    --brand-600: #2563eb;
-    --brand-700: #1d4ed8;
+    --brand-50: #fff3ed;
+    --brand-100: #ffe3d7;
+    --brand-500: #E95420;
+    --brand-600: #cf4518;
+    --brand-700: #b83a12;
+    --ubuntu-orange: #E95420;
+    --ubuntu-aubergine: #77216F;
+    --ubuntu-bg: #121212;
+    --ubuntu-surface: #1E1E1E;
+    --ubuntu-border: #2f2f2f;
+    --ubuntu-text: #FFFFFF;
+    --ubuntu-text-secondary: #B3B3B3;
     --success-500: #16a34a;
     --warning-500: #d97706;
     --danger-500: #dc2626;
@@ -25,15 +32,23 @@
   }
 
   body {
-    @apply m-0 bg-slate-50 text-slate-800 antialiased;
-    font-family: Manrope, "Avenir Next", "Segoe UI", sans-serif;
+    @apply m-0 bg-ubuntu-background text-ubuntu-text antialiased;
+    font-family: Ubuntu, Inter, Roboto, "Segoe UI", sans-serif;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+    font-family: Ubuntu, Inter, Roboto, "Segoe UI", sans-serif;
+  }
+
+  button,
+  input,
+  textarea,
+  select,
+  a {
+    @apply transition-all duration-250 ease-in-out;
   }
 }
 
@@ -43,6 +58,6 @@
   }
 
   .surface-card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-xl2 border border-ubuntu-border bg-ubuntu-surface shadow-card;
   }
 }
