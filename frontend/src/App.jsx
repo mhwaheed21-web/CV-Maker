@@ -36,9 +36,9 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-ubuntu-background p-4">
         <div className="surface-card w-full max-w-md p-6">
-          <div className="mb-4 h-6 w-32 rounded bg-slate-200" />
+          <div className="mb-4 h-6 w-32 rounded bg-ubuntu-surfaceAlt" />
           <Skeleton className="mb-3 h-11 w-full" />
           <Skeleton className="mb-3 h-11 w-full" />
           <Skeleton className="mb-4 h-11 w-40" />
