@@ -98,18 +98,18 @@ export default function GeneratePage() {
   return (
     <div className="mx-auto w-full max-w-4xl p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Generate CV</h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <h2 className="text-3xl font-bold tracking-tight text-ubuntu-text">Generate CV</h2>
+        <p className="mt-2 text-sm text-ubuntu-muted">
           Paste a job description below. The AI will tailor your CV to match it.
         </p>
       </div>
 
       <div className="surface-card space-y-3 p-5 sm:p-6">
-        <label className="text-sm font-semibold text-slate-700">Select Template</label>
+        <label className="text-sm font-semibold text-ubuntu-muted">Select Template</label>
         {loadingTemplates ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl border border-slate-200 bg-slate-100" />
+              <div key={i} className="h-24 animate-pulse rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt" />
             ))}
           </div>
         ) : (
@@ -117,33 +117,33 @@ export default function GeneratePage() {
             {templates.map((template) => (
               <div
                 key={template.id}
-                className={`rounded-xl border-2 p-4 transition ${
+                className={`rounded-xl2 border-2 p-4 transition-all duration-250 ease-in-out ${
                   selectedTemplateId === template.id
-                    ? 'border-brand-600 bg-brand-50 shadow-card'
-                    : 'border-slate-200 bg-slate-50 hover:border-brand-300'
+                    ? 'border-brand-500 bg-brand-500/10 shadow-soft'
+                    : 'border-ubuntu-border bg-ubuntu-surfaceAlt hover:border-brand-500/40'
                 }`}
                 onClick={() => setSelectedTemplateId(template.id)}
               >
-                <div className="mb-1 text-sm font-semibold text-slate-800">{template.name}</div>
-                <div className="text-xs leading-relaxed text-slate-500">{template.description}</div>
+                <div className="mb-1 text-sm font-semibold text-ubuntu-text">{template.name}</div>
+                <div className="text-xs leading-relaxed text-ubuntu-muted">{template.description}</div>
               </div>
             ))}
           </div>
         )}
 
-        <label className="text-sm font-semibold text-slate-700">CV Title (optional)</label>
+        <label className="text-sm font-semibold text-ubuntu-muted">CV Title (optional)</label>
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt px-4 text-sm text-ubuntu-text placeholder:text-ubuntu-muted/80 outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-70"
           placeholder="e.g. Senior Software Engineer at Google"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={loading}
         />
 
-        <label className="text-sm font-semibold text-slate-700">Job Description *</label>
+        <label className="text-sm font-semibold text-ubuntu-muted">Job Description *</label>
         <textarea
-          className={`min-h-64 w-full rounded-xl border bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100 ${
-            errors.job_description ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          className={`min-h-64 w-full rounded-xl2 border bg-ubuntu-surfaceAlt px-4 py-3 text-sm leading-relaxed text-ubuntu-text placeholder:text-ubuntu-muted/80 outline-none transition-all duration-250 ease-in-out focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-70 ${
+            errors.job_description ? 'border-red-400 focus:border-red-500' : 'border-ubuntu-border focus:border-brand-500'
           }`}
           placeholder="Paste the full job description here..."
           value={jobDescription}
@@ -158,15 +158,15 @@ export default function GeneratePage() {
         />
 
         {errors.job_description && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl2 border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
             {errors.job_description}
           </p>
         )}
 
         {loading && (
-          <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-brand-600" />
-            <p className="text-sm font-medium text-blue-700">{status}</p>
+          <div className="flex items-center gap-3 rounded-xl2 border border-brand-400/40 bg-brand-500/10 px-4 py-3">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-300/40 border-t-brand-500" />
+            <p className="text-sm font-medium text-brand-100">{status}</p>
           </div>
         )}
 

@@ -50,11 +50,11 @@ function ExperienceItem({ item, onSave, onDelete }) {
   }
 
   return (
-    <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <div className="mb-3 rounded-xl2 border border-ubuntu-border bg-ubuntu-surfaceAlt p-4">
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
-          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
-            errors.job_title ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          className={`h-11 w-full rounded-xl2 border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:ring-2 focus:ring-brand-500/20 ${
+            errors.job_title ? 'border-red-400 focus:border-red-500' : 'border-ubuntu-border focus:border-brand-500'
           }`}
           name="job_title"
           placeholder="Job Title"
@@ -67,8 +67,8 @@ function ExperienceItem({ item, onSave, onDelete }) {
           }}
         />
         <input
-          className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-brand-100 ${
-            errors.company_name ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-brand-500'
+          className={`h-11 w-full rounded-xl2 border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:ring-2 focus:ring-brand-500/20 ${
+            errors.company_name ? 'border-red-400 focus:border-red-500' : 'border-ubuntu-border focus:border-brand-500'
           }`}
           name="company_name"
           placeholder="Company"
@@ -83,21 +83,21 @@ function ExperienceItem({ item, onSave, onDelete }) {
       </div>
       {(errors.job_title || errors.company_name) && (
         <div className="mb-2 space-y-1">
-          {errors.job_title && <p className="text-xs font-medium text-red-600">{errors.job_title}</p>}
-          {errors.company_name && <p className="text-xs font-medium text-red-600">{errors.company_name}</p>}
+          {errors.job_title && <p className="text-xs font-medium text-red-400">{errors.job_title}</p>}
+          {errors.company_name && <p className="text-xs font-medium text-red-400">{errors.company_name}</p>}
         </div>
       )}
 
       <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           name="start_date"
           placeholder="Start date (e.g. Jan 2022)"
           value={form.start_date || ''}
           onChange={handleChange}
         />
         <input
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+          className="h-11 w-full rounded-xl2 border border-ubuntu-border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60"
           name="end_date"
           placeholder="End date (or leave blank if current)"
           value={form.end_date || ''}
@@ -106,22 +106,22 @@ function ExperienceItem({ item, onSave, onDelete }) {
         />
       </div>
 
-      <label className="mb-2 inline-flex items-center gap-2 text-sm text-slate-700">
+      <label className="mb-2 inline-flex items-center gap-2 text-sm text-ubuntu-muted">
         <input type="checkbox" checked={form.is_current} onChange={(e) => setForm({ ...form, is_current: e.target.checked })} />
         Currently working here
       </label>
 
-      <p className="mb-2 text-sm font-medium text-slate-600">Responsibilities / Achievements</p>
+      <p className="mb-2 text-sm font-medium text-ubuntu-muted">Responsibilities / Achievements</p>
       {(form.responsibilities || []).map((bullet, i) => (
         <div key={i} className="mb-2 flex gap-2">
           <input
-            className="h-11 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className="h-11 flex-1 rounded-xl2 border border-ubuntu-border bg-ubuntu-surface px-4 text-sm text-ubuntu-text outline-none transition-all duration-250 ease-in-out focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
             placeholder={`Bullet point ${i + 1}`}
             value={bullet}
             onChange={(e) => handleBulletChange(i, e.target.value)}
           />
           <button
-            className="h-11 min-w-[44px] rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+            className="h-11 min-w-[44px] rounded-xl2 border border-red-400/40 bg-red-500/10 px-3 text-sm font-semibold text-red-200 transition-all duration-250 ease-in-out hover:bg-red-500/20"
             onClick={() => removeBullet(i)}
           >
             ✕
@@ -130,7 +130,7 @@ function ExperienceItem({ item, onSave, onDelete }) {
       ))}
 
       <button
-        className="mt-1 min-h-[44px] rounded-xl border border-dashed border-brand-400 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+        className="mt-1 min-h-[44px] rounded-xl2 border border-dashed border-brand-400 bg-brand-500/5 px-4 py-2 text-sm font-semibold text-brand-300 transition-all duration-250 ease-in-out hover:bg-brand-500/10"
         onClick={addBullet}
       >
         + Add bullet
@@ -138,14 +138,14 @@ function ExperienceItem({ item, onSave, onDelete }) {
 
       <div className="mt-3 flex flex-wrap gap-2">
         <button
-          className="min-h-[44px] rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="min-h-[44px] rounded-xl2 bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-all duration-250 ease-in-out hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-ubuntu-surface"
           onClick={handleSave}
           disabled={saving}
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
         <button
-          className="min-h-[44px] rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+          className="min-h-[44px] rounded-xl2 bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-250 ease-in-out hover:bg-red-700"
           onClick={() => onDelete(item.id)}
         >
           Delete
@@ -200,7 +200,7 @@ export default function WorkExperienceForm({ data }) {
       {adding && <ExperienceItem item={newItem} onSave={handleSave} onDelete={() => setAdding(false)} />}
       {!adding && (
         <button
-          className="min-h-[44px] rounded-xl border border-dashed border-brand-400 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
+          className="min-h-[44px] rounded-xl2 border border-dashed border-brand-400 bg-brand-500/5 px-4 py-2 text-sm font-semibold text-brand-300 transition-all duration-250 ease-in-out hover:bg-brand-500/10"
           onClick={() => setAdding(true)}
         >
           + Add Work Experience

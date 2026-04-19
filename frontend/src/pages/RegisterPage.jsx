@@ -68,15 +68,15 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-white to-cyan-50 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute -left-24 top-12 h-64 w-64 rounded-full bg-cyan-200/40 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-12 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-ubuntu-background via-ubuntu-surface to-ubuntu-aubergine/60 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute -left-24 top-12 h-64 w-64 rounded-full bg-ubuntu-aubergine/35 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-12 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
 
       <div className="surface-card relative z-10 w-full max-w-md p-8 sm:p-10">
         <div className="mb-8 text-center">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-600">CV Maker</p>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Create Account</h1>
-          <h2 className="mt-2 text-sm font-medium text-slate-500">Start building tailored CVs</h2>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">CV Maker</p>
+          <h1 className="text-3xl font-bold tracking-tight text-ubuntu-text">Create Account</h1>
+          <h2 className="mt-2 text-sm font-medium text-ubuntu-muted">Start building tailored CVs</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -110,9 +110,9 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-ubuntu-muted">
           Already have an account?{' '}
-          <Link className="font-semibold text-brand-700 transition hover:text-brand-600" to="/login">
+          <Link className="font-semibold text-brand-400 transition-all duration-250 ease-in-out hover:text-brand-300" to="/login">
             Sign in
           </Link>
         </p>
