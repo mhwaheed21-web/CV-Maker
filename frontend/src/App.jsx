@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import CVViewPage from './pages/CVViewPage'
+import { Skeleton, ToastContainer } from './components/common'
 
 function AuthGuard({ children }) {
   const { isAuthenticated } = useAuthStore()
@@ -33,10 +34,23 @@ export default function App() {
     }
   }, [])
 
-  if (loading) return <div style={{ padding: 40, fontSize: 16 }}>Loading...</div>
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+        <div className="surface-card w-full max-w-md p-6">
+          <div className="mb-4 h-6 w-32 rounded bg-slate-200" />
+          <Skeleton className="mb-3 h-11 w-full" />
+          <Skeleton className="mb-3 h-11 w-full" />
+          <Skeleton className="mb-4 h-11 w-40" />
+          <Skeleton className="h-11 w-full" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
