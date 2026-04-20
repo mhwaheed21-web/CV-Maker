@@ -1,4 +1,3 @@
-import logo from '../assets/cv-maker-logo.svg'
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { register as registerApi, getMe } from '../api/auth'
@@ -75,7 +74,6 @@ export default function RegisterPage() {
 
       <div className="surface-card relative z-10 w-full max-w-md p-8 sm:p-10">
         <div className="mb-8 text-center">
-          <img src={logo} alt="CV Maker Logo" className="h-8 mx-auto mb-2" />
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">CV Maker</p>
           <h1 className="text-3xl font-bold tracking-tight text-ubuntu-text">Create Account</h1>
           <h2 className="mt-2 text-sm font-medium text-ubuntu-muted">Start building tailored CVs</h2>
