@@ -125,7 +125,7 @@ export default function GeneratePage() {
                 onClick={() => setSelectedTemplateId(template.id)}
               >
                 <div className="mb-1 text-sm font-semibold text-ubuntu-text">{template.name}</div>
-                <div className="text-xs leading-relaxed text-ubuntu-muted">{template.description}</div>
+                {/* <div className="text-xs leading-relaxed text-ubuntu-muted">{template.description}</div> */}
               </div>
             ))}
           </div>
