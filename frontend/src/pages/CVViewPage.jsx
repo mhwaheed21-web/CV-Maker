@@ -302,8 +302,8 @@ export default function CVViewPage() {
 
         <section className="surface-card min-h-[75vh] p-3 sm:p-4">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ubuntu-muted">Live Preview</p>
-            <p className="text-xs text-ubuntu-muted/80">Version {previewVersion + 1}</p>
+            {/* <p className="text-xs font-semibold uppercase tracking-wide text-ubuntu-muted">Live Preview</p> */}
+            {/* <p className="text-xs text-ubuntu-muted/80">Version {previewVersion + 1}</p> */}
           </div>
           <div className="h-[72vh] overflow-hidden rounded-xl2 border border-ubuntu-border bg-white shadow-soft">
             <iframe src={previewUrl} className="h-full w-full" title="CV Preview" />

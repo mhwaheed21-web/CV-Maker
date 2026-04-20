@@ -14,7 +14,9 @@ export default function ChatPanel({
     <section className="flex h-full flex-col rounded-xl2 border border-ubuntu-border bg-ubuntu-surface p-4 shadow-soft">
       <div className="mb-3 border-b border-ubuntu-border pb-3">
         <h3 className="text-sm font-bold text-ubuntu-text">Conversation</h3>
-        <p className="mt-1 text-xs text-ubuntu-muted">Messages are saved with this CV revision.</p>
+        <p className="mt-1 text-xs text-ubuntu-muted">
+          {/* Messages are saved with this CV revision. */}
+          </p>
       </div>
 
       <div className="mb-3 flex-1 space-y-2 overflow-y-auto pr-1">
