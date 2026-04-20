@@ -100,7 +100,7 @@ export default function GeneratePage() {
       <div className="mb-6">
         <h2 className="text-3xl font-bold tracking-tight text-ubuntu-text">Generate CV</h2>
         <p className="mt-2 text-sm text-ubuntu-muted">
-          Paste a job description below. The AI will tailor your CV to match it.
+           {/* Paste a job description below. The AI will tailor your CV to match it. */}
         </p>
       </div>
 

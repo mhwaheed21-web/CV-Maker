@@ -56,7 +56,7 @@ export default function ProfilePage() {
       <div className="mb-6">
         <h2 className="text-3xl font-bold tracking-tight text-ubuntu-text">My Profile</h2>
         <p className="mt-2 text-sm text-ubuntu-muted">
-          Fill in your information. This is what the AI uses to generate your CVs.
+           {/* Fill in your information. This is what the AI uses to generate your CVs. */}
         </p>
       </div>
 
