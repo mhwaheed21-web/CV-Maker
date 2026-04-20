@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -20,6 +21,12 @@ from app.models.cv import GeneratedCV
 from app.models.chat import CVChatMessage
 
 config = context.config
+
+# Prefer runtime DATABASE_URL (Container App/CI) over alembic.ini default.
+database_url = os.getenv("DATABASE_URL")
+if database_url:
+    # Alembic Config uses %-style interpolation; escape '%' in URLs.
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
