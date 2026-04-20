@@ -1,11 +1,12 @@
 # AI-Powered CV Maker
 
-A full-stack web application that generates professionally tailored CVs using GPT-4o. Users store their complete professional profile once, then generate customised CVs for any job description in seconds — with a chat interface for AI-assisted editing and one-click PDF export.
+> A full-stack web application that generates professionally tailored CVs using GPT-4o. Store your professional profile once, then generate a customised, ATS-optimised CV for any job description in seconds — with an AI chat interface for iterative editing and one-click PDF export.
 
 ---
 
 ## Table of Contents
 
+- [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
@@ -14,10 +15,29 @@ A full-stack web application that generates professionally tailored CVs using GP
 - [API Reference](#api-reference)
 - [Database Schema](#database-schema)
 - [CV Generation Pipeline](#cv-generation-pipeline)
-- [Templates](#templates)
+- [CV Templates](#cv-templates)
+- [AI Safety & Hallucination Prevention](#ai-safety--hallucination-prevention)
+- [Authentication Flow](#authentication-flow)
 - [Development Workflow](#development-workflow)
+- [Testing](#testing)
 - [Deployment (Azure)](#deployment-azure)
+- [CI/CD Pipeline](#cicd-pipeline)
 - [Design Decisions](#design-decisions)
+- [Upgrade Path](#upgrade-path)
+
+---
+
+## Features
+
+- **Profile-Once, Generate-Many** — enter your full professional profile (work experience, education, skills, projects, certifications) and generate unlimited tailored CVs without re-entering data
+- **AI-Tailored Generation** — GPT-4o rewrites your profile content to match the language, keywords, and priorities of each specific job description
+- **ATS Optimisation** — structured output designed to pass Applicant Tracking Systems
+- **5 Professional Templates** — minimal, modern, technical, creative, and executive styles
+- **AI Chat Editing** — refine any section using plain English after generation (e.g. *"Move skills above experience"*, *"Rewrite the summary to be more concise"*)
+- **PDF Export** — download a print-ready A4 PDF with one click
+- **Full CV History** — all generated CVs are saved, accessible, and re-editable
+- **Persistent Chat History** — AI editing conversations are saved per CV
+- **JWT Authentication** — secure register/login with automatic token refresh
 
 ---
 
@@ -25,15 +45,15 @@ A full-stack web application that generates professionally tailored CVs using GP
 
 | Layer | Technology |
 |---|---|
-| Frontend | React (Vite), React Router, Zustand, Axios |
-| Backend | FastAPI (Python 3.12) |
+| Frontend | React 18 (Vite), React Router v6, Zustand, Axios |
+| Backend | FastAPI (Python 3.12), SQLAlchemy (async), Alembic |
 | Database | PostgreSQL 16 |
 | AI | OpenAI GPT-4o (JSON mode) |
 | PDF Engine | WeasyPrint + Jinja2 |
-| Auth | JWT — access + refresh tokens, bcrypt |
+| Auth | JWT — access + refresh tokens, bcrypt password hashing |
 | Containerisation | Docker, Docker Compose |
 | CI/CD | GitHub Actions |
-| Cloud | Azure Container Apps, Azure Container Registry, Azure Key Vault |
+| Cloud | Azure Container Apps, Azure Container Registry, Azure Key Vault, Azure Database for PostgreSQL |
 
 ---
 
@@ -59,14 +79,25 @@ A full-stack web application that generates professionally tailored CVs using GP
 ┌──────────▼──────────┐        ┌──────────▼──────────────────┐
 │  PostgreSQL 16       │        │  OpenAI API (GPT-4o)        │
 │  users, profiles,   │        │  CV generation + chat       │
-│  CVs, sessions      │        │  editing                    │
+│  CVs, chat history  │        │  editing                    │
 └─────────────────────┘        └─────────────────────────────┘
            │
 ┌──────────▼──────────────────────────────┐
 │       PDF Engine (WeasyPrint)           │
 │   Jinja2 HTML template → PDF bytes      │
 └─────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                   DevOps & Deployment                       │
+│  ┌─────────────────┐  ┌──────────────┐  ┌───────────────┐  │
+│  │  Docker Compose │  │GitHub Actions│  │  Azure        │  │
+│  │   Local dev     │  │ CI/CD        │  │  Container    │  │
+│  └─────────────────┘  └──────────────┘  │  Apps         │  │
+│                                         └───────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+Nginx on the frontend container proxies all `/api/*` requests to the backend, so the React app never needs to know the backend's internal address.
 
 ---
 
@@ -76,55 +107,66 @@ A full-stack web application that generates professionally tailored CVs using GP
 cv-maker/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py                     # FastAPI app factory, router registration
-│   │   ├── config.py                   # Settings from environment variables
-│   │   ├── dependencies.py             # get_current_user JWT middleware
+│   │   ├── main.py                    # FastAPI app factory, router registration
+│   │   ├── config.py                  # Settings via pydantic-settings (env vars)
+│   │   ├── dependencies.py            # Shared DI: get_db, get_current_user
+│   │   │
 │   │   ├── api/v1/
-│   │   │   ├── auth.py                 # Register, login, refresh, me
-│   │   │   ├── profile.py              # Profile CRUD (18 endpoints)
-│   │   │   ├── cvs.py                  # Generate, list, get, download
-│   │   │   ├── templates.py            # List available CV templates
-│   │   │   └── chat.py                 # AI chat editing session
+│   │   │   ├── auth.py                # /auth/register, /auth/login, /auth/refresh, /auth/me
+│   │   │   ├── profile.py             # /profile/* — all CV data sections CRUD
+│   │   │   ├── cvs.py                 # /cvs/* — generate, list, get, download, delete
+│   │   │   ├── templates.py           # /templates — list available templates
+│   │   │   └── chat.py                # /cvs/{id}/chat — AI editing session
+│   │   │
 │   │   ├── core/
-│   │   │   ├── security.py             # bcrypt hashing + JWT encode/decode
-│   │   │   └── exceptions.py           # Custom HTTP exception handlers
+│   │   │   ├── security.py            # JWT encode/decode, bcrypt hashing
+│   │   │   └── exceptions.py          # Global HTTP exception handlers
+│   │   │
 │   │   ├── db/
-│   │   │   ├── session.py              # Async SQLAlchemy engine + get_db
-│   │   │   ├── base.py                 # Declarative base aggregator
-│   │   │   └── migrations/             # Alembic migration files
+│   │   │   ├── session.py             # Async SQLAlchemy engine + session factory
+│   │   │   ├── base.py                # Declarative base import aggregator
+│   │   │   └── migrations/            # Alembic migration files
+│   │   │       └── versions/
+│   │   │
 │   │   ├── models/
 │   │   │   ├── user.py
-│   │   │   ├── profile.py              # Profile, WorkExperience, Education,
-│   │   │   │                           # Skill, Project, Certification
-│   │   │   ├── cv.py
+│   │   │   ├── profile.py             # Profile, WorkExperience, Education,
+│   │   │   │                          #   Skill, Project, Certification
+│   │   │   ├── cv.py                  # GeneratedCV
 │   │   │   └── chat_message.py
-│   │   ├── schemas/
+│   │   │
+│   │   ├── schemas/                   # Pydantic request/response schemas
 │   │   │   ├── auth.py
 │   │   │   ├── profile.py
 │   │   │   ├── cv.py
 │   │   │   └── chat.py
-│   │   ├── services/
-│   │   │   ├── auth_service.py
-│   │   │   ├── profile_service.py
-│   │   │   ├── cv_service.py           # Orchestrates generation pipeline
-│   │   │   ├── ai_service.py           # All OpenAI calls
-│   │   │   ├── pdf_service.py          # HTML → PDF via WeasyPrint
-│   │   │   └── template_service.py     # Loads and renders Jinja2 templates
-│   │   ├── templates/                  # Jinja2 HTML CV templates
+│   │   │
+│   │   ├── services/                  # Business logic layer
+│   │   │   ├── auth_service.py        # Registration, login, token refresh
+│   │   │   ├── profile_service.py     # CRUD for all profile sections
+│   │   │   ├── cv_service.py          # Orchestrates generation pipeline
+│   │   │   ├── ai_service.py          # All OpenAI calls (generation + editing)
+│   │   │   ├── pdf_service.py         # HTML → PDF via WeasyPrint
+│   │   │   └── template_service.py    # Loads and renders Jinja2 CV templates
+│   │   │
+│   │   ├── templates/                 # Jinja2 HTML templates for CV output
 │   │   │   ├── base_cv.html
-│   │   │   ├── template_modern.html
 │   │   │   ├── template_minimal.html
+│   │   │   ├── template_modern.html
 │   │   │   ├── template_technical.html
 │   │   │   ├── template_creative.html
 │   │   │   └── template_executive.html
+│   │   │
 │   │   └── utils/
-│   │       ├── prompt_builder.py       # Assembles AI prompts from profile data
-│   │       └── cv_parser.py            # Parses AI JSON output → CV schema
+│   │       ├── prompt_builder.py      # Assembles AI prompts from profile data
+│   │       └── cv_parser.py           # Parses + validates AI JSON output
+│   │
 │   ├── tests/
 │   │   ├── conftest.py
 │   │   ├── test_auth.py
 │   │   ├── test_cv_generation.py
 │   │   └── test_ai_service.py
+│   │
 │   ├── alembic.ini
 │   ├── requirements.txt
 │   └── Dockerfile
@@ -132,24 +174,27 @@ cv-maker/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
-│   │   │   ├── client.js               # Axios instance + JWT interceptors
+│   │   │   ├── client.js              # Axios instance + JWT interceptors
 │   │   │   ├── auth.js
 │   │   │   ├── profile.js
 │   │   │   ├── cvs.js
 │   │   │   └── chat.js
-│   │   ├── store/
-│   │   │   ├── authStore.js            # Global auth state (Zustand)
+│   │   │
+│   │   ├── store/                     # Zustand global state
+│   │   │   ├── authStore.js
 │   │   │   ├── profileStore.js
 │   │   │   └── cvStore.js
+│   │   │
 │   │   ├── pages/
 │   │   │   ├── LoginPage.jsx
 │   │   │   ├── RegisterPage.jsx
-│   │   │   ├── DashboardPage.jsx
-│   │   │   ├── ProfilePage.jsx
-│   │   │   ├── GeneratePage.jsx        # JD input + template picker
-│   │   │   ├── CVListPage.jsx
-│   │   │   ├── CVViewPage.jsx          # Preview + download + chat
+│   │   │   ├── DashboardPage.jsx      # Overview + navigation hub
+│   │   │   ├── ProfilePage.jsx        # All CV data sections
+│   │   │   ├── GeneratePage.jsx       # JD input + template picker
+│   │   │   ├── CVListPage.jsx         # History of generated CVs
+│   │   │   ├── CVViewPage.jsx         # Preview + download + chat panel
 │   │   │   └── NotFoundPage.jsx
+│   │   │
 │   │   ├── components/
 │   │   │   ├── layout/
 │   │   │   │   ├── Sidebar.jsx
@@ -163,33 +208,38 @@ cv-maker/
 │   │   │   │   ├── ProjectsForm.jsx
 │   │   │   │   └── CertificationsForm.jsx
 │   │   │   ├── cv/
-│   │   │   │   ├── TemplateCard.jsx
-│   │   │   │   ├── CVCard.jsx
-│   │   │   │   └── CVPreviewFrame.jsx
+│   │   │   │   ├── TemplateCard.jsx   # Template preview thumbnail
+│   │   │   │   ├── CVCard.jsx         # CV history list item
+│   │   │   │   └── CVPreviewFrame.jsx # CV HTML rendered in iframe
 │   │   │   ├── chat/
-│   │   │   │   ├── ChatPanel.jsx
+│   │   │   │   ├── ChatPanel.jsx      # AI editing sidebar
 │   │   │   │   └── ChatMessage.jsx
 │   │   │   └── common/
 │   │   │       ├── Button.jsx
 │   │   │       ├── Input.jsx
 │   │   │       ├── Modal.jsx
 │   │   │       └── LoadingSpinner.jsx
+│   │   │
 │   │   ├── hooks/
 │   │   │   ├── useAuth.js
 │   │   │   ├── useProfile.js
 │   │   │   └── useCV.js
+│   │   │
 │   │   ├── utils/
 │   │   │   ├── formatters.js
 │   │   │   └── validators.js
-│   │   ├── App.jsx                     # Router, AuthGuard, session restore
+│   │   │
+│   │   ├── App.jsx                    # Router setup, AuthGuard
 │   │   └── main.jsx
-│   ├── nginx.conf                      # SPA fallback + /api/ proxy
+│   │
+│   ├── nginx.conf                     # SPA fallback + /api/ proxy to backend
 │   ├── Dockerfile
 │   └── package.json
 │
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml                  # CI/CD pipeline
+│       └── deploy.yml                 # CI/CD — test → build → push → deploy
+│
 ├── docker-compose.yml
 ├── .env.example
 └── .gitignore
@@ -204,8 +254,8 @@ The only prerequisite is [Docker Desktop](https://www.docker.com/products/docker
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/cv-maker.git
-cd cv-maker
+git clone https://github.com/mhwaheed21-web/CV-Maker.git
+cd CV-Maker
 ```
 
 ### 2. Configure environment variables
@@ -222,7 +272,7 @@ Open `.env` and fill in your values — see [Environment Variables](#environment
 docker compose up --build
 ```
 
-The first run takes 3–5 minutes while base images download and packages install. Subsequent starts are much faster.
+The first run takes 3–5 minutes while base images download and dependencies install. Subsequent starts are much faster.
 
 ### 4. Apply database migrations
 
@@ -239,28 +289,31 @@ exit
 | URL | Description |
 |---|---|
 | `http://localhost` | React frontend |
-| `http://localhost:8000/docs` | FastAPI interactive API docs (Swagger) |
-| `http://localhost:8000` | API health check |
+| `http://localhost:8000/docs` | FastAPI interactive API docs (Swagger UI) |
+| `http://localhost:8000` | API health check — returns `{"status": "ok"}` |
 
 ---
 
 ## Environment Variables
 
+Copy `.env.example` to `.env` and fill in your values:
+
 ```bash
+# Database
 DB_USER=cvmaker_user
 DB_PASSWORD=your_strong_password_here
-DB_NAME=cvmaker
+
+# Backend
 SECRET_KEY=your_jwt_secret_key_here
 OPENAI_API_KEY=sk-...
 ```
 
-> `.env` is git-ignored. Never commit secrets to the repository.
+> `.env` is git-ignored. **Never commit secrets to the repository.**
 
 | Variable | Description |
 |---|---|
 | `DB_USER` | PostgreSQL username |
 | `DB_PASSWORD` | PostgreSQL password |
-| `DB_NAME` | PostgreSQL database name |
 | `SECRET_KEY` | JWT signing secret — any long random string |
 | `OPENAI_API_KEY` | OpenAI API key from [platform.openai.com](https://platform.openai.com) |
 
@@ -268,107 +321,247 @@ OPENAI_API_KEY=sk-...
 
 ## API Reference
 
-All endpoints are prefixed with `/api/v1/`. Protected routes require `Authorization: Bearer <access_token>`.
+All endpoints are prefixed with `/api/v1/`. Protected routes require the `Authorization: Bearer <access_token>` header.
 
-### Auth — `/auth`
+### Auth — `/api/v1/auth`
 
-| Method | Endpoint | Description | Auth |
+| Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
 | `POST` | `/register` | Create account, returns JWT pair | No |
-| `POST` | `/login` | Login, returns JWT pair | No |
-| `POST` | `/refresh` | Issue new access token from refresh token | No |
+| `POST` | `/login` | Email + password → access + refresh tokens | No |
+| `POST` | `/refresh` | Exchange refresh token for new access token | No |
+| `POST` | `/logout` | Invalidate refresh token | Yes |
 | `GET` | `/me` | Get current user info | Yes |
 
-### Profile — `/profile`
+### Profile — `/api/v1/profile`
+
+All profile endpoints require authentication. Data is always scoped to the current user.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Get entire profile (all sections) |
-| `PUT` | `/personal` | Update personal info and summary |
-| `GET / POST` | `/experience` | List or add work experience |
-| `PUT / DELETE` | `/experience/{id}` | Update or delete an entry |
-| `GET / POST` | `/education` | List or add education |
-| `PUT / DELETE` | `/education/{id}` | Update or delete an entry |
-| `GET / POST` | `/skills` | List or bulk upsert skills |
-| `GET / POST` | `/projects` | List or add a project |
-| `PUT / DELETE` | `/projects/{id}` | Update or delete a project |
-| `GET / POST` | `/certifications` | List or add a certification |
-| `PUT / DELETE` | `/certifications/{id}` | Update or delete a certification |
+| `GET` | `/` | Fetch entire profile (all sections in one response) |
+| `PUT` | `/personal` | Update personal info and professional summary |
+| `GET` | `/experience` | List work experience entries |
+| `POST` | `/experience` | Add a new work experience entry |
+| `PUT` | `/experience/{id}` | Update a specific entry |
+| `DELETE` | `/experience/{id}` | Remove an entry |
+| `GET` | `/education` | List education records |
+| `POST` | `/education` | Add an education record |
+| `PUT` | `/education/{id}` | Update an education record |
+| `DELETE` | `/education/{id}` | Remove an education record |
+| `GET` | `/skills` | List skills |
+| `POST` | `/skills` | Bulk upsert skills list |
+| `GET` | `/projects` | List projects |
+| `POST` | `/projects` | Add a project |
+| `PUT` | `/projects/{id}` | Update a project |
+| `DELETE` | `/projects/{id}` | Remove a project |
+| `GET` | `/certifications` | List certifications |
+| `POST` | `/certifications` | Add a certification |
+| `PUT` | `/certifications/{id}` | Update a certification |
+| `DELETE` | `/certifications/{id}` | Remove a certification |
 
-### CVs — `/cvs`
+### CVs — `/api/v1/cvs`
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/generate` | Generate a new CV from profile + job description |
-| `GET` | `/` | List all generated CVs |
-| `GET` | `/{id}` | Get a specific CV |
-| `GET` | `/{id}/download` | Download CV as PDF |
-| `POST` | `/{id}/chat` | Send a message to AI-edit the CV |
-| `GET` | `/templates` | List available CV templates |
+| `POST` | `/generate` | Submit job description + template → triggers AI pipeline, returns `{cv_id, status}` immediately |
+| `GET` | `/` | List all generated CVs for current user |
+| `GET` | `/{id}` | Fetch full CV content and metadata |
+| `GET` | `/{id}/status` | Poll generation status: `pending / generating / complete / failed` |
+| `GET` | `/{id}/download` | Stream PDF bytes with `Content-Disposition` header |
+| `POST` | `/{id}/regenerate` | Re-run pipeline with new or same job description |
+| `DELETE` | `/{id}` | Delete CV and its chat history |
+
+> **Note on async generation:** `POST /cvs/generate` returns immediately with a `cv_id`. The frontend polls `GET /cvs/{id}/status` every 2 seconds to avoid HTTP timeout issues on long AI calls.
+
+### AI Chat Editing — `/api/v1/cvs/{id}/chat`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/messages` | Load full chat history for this CV |
+| `POST` | `/send` | Send an edit instruction → returns updated `cv_content` + AI confirmation |
+
+### Templates — `/api/v1/templates`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | List all available templates with preview metadata |
 
 ---
 
 ## Database Schema
 
 ```
-users               — id, email, hashed_password, full_name, timestamps
-profiles            — user_id (1:1), phone, location, linkedin, portfolio, summary
-work_experiences    — user_id (1:many), job_title, company, dates, responsibilities (JSON)
-educations          — user_id (1:many), degree, institution, year, gpa
-skills              — user_id (1:many), name, category, proficiency
-projects            — user_id (1:many), name, description, technologies (JSON), url
-certifications      — user_id (1:many), name, issuer, issue_date, expiry_date
-cvs                 — user_id (1:many), template, job_description, cv_content (JSONB), timestamps
-chat_messages       — cv_id (1:many), role, content, timestamps
+users
+  id (UUID, PK), email (unique), hashed_password, full_name, created_at, updated_at
+
+profiles                          — 1:1 with users
+  user_id (FK), phone, location, linkedin_url, portfolio_url,
+  professional_summary, updated_at
+
+work_experiences                  — 1:many with users
+  user_id (FK), job_title, company_name, start_date, end_date,
+  is_current (BOOL), responsibilities (JSONB), display_order
+
+educations                        — 1:many with users
+  user_id (FK), degree, institution, graduation_year, gpa, display_order
+
+skills                            — 1:many with users
+  user_id (FK), name, category, proficiency
+
+projects                          — 1:many with users
+  user_id (FK), name, description, technologies (JSONB), url, display_order
+
+certifications                    — 1:many with users
+  user_id (FK), name, issuer, issue_date, expiry_date
+
+generated_cvs                     — 1:many with users
+  user_id (FK), title, job_description (TEXT), template_id,
+  cv_content (JSONB), status (pending/generating/complete/failed), created_at
+
+chat_messages                     — 1:many with generated_cvs
+  cv_id (FK), role (user/assistant), content (TEXT), created_at
 ```
 
-CV content is stored as JSONB, enabling fast re-rendering across different templates without re-calling the AI.
+**Key design decisions:**
+
+- `responsibilities` and `technologies` are stored as JSONB arrays — they are always read and written with their parent record, so no join table is needed at MVP scale.
+- `cv_content` on `generated_cvs` stores the entire structured CV JSON, enabling re-rendering across different templates and chat editing without re-querying all profile tables.
+- `display_order` integers on experience, projects, and education allow the AI chat to reorder sections by updating a single integer field.
+- `status` lifecycle: `pending → generating → complete → failed`
 
 ---
 
 ## CV Generation Pipeline
 
 ```
-User submits job description + template choice
-        │
-        ▼
-Backend assembles prompt from full profile data
-        │
-        ▼
-GPT-4o (JSON mode) generates structured CV content
-— relevant sections only, strict no-hallucination prompt
-        │
-        ▼
-Pydantic validates the AI JSON output
-        │
-        ▼
-CV content saved to database (JSONB column)
-        │
-        ▼
-Jinja2 renders HTML using the chosen template
-        │
-        ▼
-WeasyPrint converts HTML → PDF bytes
-        │
-        ▼
-PDF returned to user for download
+POST /cvs/generate (returns immediately with cv_id)
+│
+├─ 1. Auth check         — verify JWT, extract user_id
+├─ 2. Validate request   — JD text present, template_id valid
+├─ 3. Create DB record   — GENERATED_CVS row, status = "pending"
+├─ 4. Return to client   — { cv_id, status: "pending" }
+│
+└─ Background task (FastAPI BackgroundTasks):
+   │
+   ├─ 5. Fetch profile    — load all user data from all profile tables
+   ├─ 6. Build prompt     — prompt_builder.py assembles JD + profile JSON
+   ├─ 7. Call OpenAI      — GPT-4o, JSON mode, structured CV schema
+   ├─ 8. Parse + validate — cv_parser.py + Pydantic schema validation
+   ├─ 9. Save cv_content  — persist JSON to DB, set status = "generating"
+   ├─ 10. Render HTML     — Jinja2 template + cv_content injected
+   ├─ 11. Generate PDF    — WeasyPrint renders HTML → PDF bytes
+   ├─ 12. Store PDF       — set status = "complete"
+   └─ 13. Error handling  — on any failure, set status = "failed", log error
 ```
 
-After generation, users can open the **AI chat panel** to refine any part of the CV using natural language — e.g. *"Make the summary more concise"* or *"Add more impact to the second bullet point"*.
+### AI Output Schema
+
+Both generation and editing produce this JSON structure:
+
+```json
+{
+  "summary": "Professional summary text...",
+  "sections": [
+    {
+      "type": "experience",
+      "title": "Work Experience",
+      "display_order": 1,
+      "items": [
+        {
+          "heading": "Senior Software Engineer — Acme Corp",
+          "subheading": "Jan 2021 – Present",
+          "bullets": [
+            "Led migration of monolith to microservices, reducing deploy time by 40%",
+            "Mentored team of 4 junior engineers"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "skills",
+      "title": "Technical Skills",
+      "display_order": 2,
+      "items": [
+        { "heading": "Languages", "bullets": ["Python", "TypeScript", "SQL"] }
+      ]
+    }
+  ]
+}
+```
+
+### Frontend Polling
+
+```
+1. User submits JD → POST /cvs/generate → receives { cv_id }
+2. Frontend polls  GET /cvs/{cv_id}/status every 2 seconds
+3. When status == "complete" → fetch GET /cvs/{cv_id} for full content
+4. When status == "failed"   → show error with retry option
+```
 
 ---
 
-## Templates
+## CV Templates
 
-| Template | Style |
+All templates are Jinja2 HTML files with print-optimised CSS. They all consume the same `cv_content` JSON structure, so switching templates never requires re-generating the AI content.
+
+| Template ID | Style |
 |---|---|
-| `modern` | Clean layout with subtle colour accents |
-| `minimal` | Whitespace-focused, typography-led |
-| `technical` | Skills-forward, structured for engineering roles |
-| `creative` | Visual hierarchy, suited to design and marketing |
-| `executive` | Formal, achievement-driven, suited to senior roles |
+| `minimal` | Clean white background, simple typography, single column |
+| `modern` | Accent colour sidebar, two-column layout |
+| `technical` | Monospace accents, compact, skills-first layout |
+| `creative` | Bold header, subtle colour accents, slightly more visual |
+| `executive` | Formal, wide margins, achievement-driven, conservative |
 
-Templates are Jinja2 HTML files with print-optimised CSS — fully ATS-compatible.
+All templates include `@media print` CSS with `@page { size: A4; margin: 15mm; }` and `page-break-inside: avoid` on sections.
+
+---
+
+## AI Safety & Hallucination Prevention
+
+CV accuracy is a core product requirement. The system prompt for both generation and editing enforces strict rules:
+
+**Generation system prompt:**
+```
+You are an expert CV writer and ATS optimization specialist.
+
+RULES — follow without exception:
+1. Only use information explicitly provided in the user's profile data.
+   Do NOT invent, embellish, or add any experience, skills, companies,
+   dates, or qualifications not present in the input.
+2. Rewrite and rephrase the user's own content to be more professional,
+   impactful, and keyword-aligned with the job description.
+3. Select and prioritize sections/content most relevant to the job description.
+4. Use strong action verbs. Quantify achievements where data supports it.
+5. Return ONLY valid JSON matching the schema. No prose outside JSON.
+```
+
+**Chat editing system prompt:**
+```
+RULES:
+1. Apply ONLY the requested change. Do not alter unrelated sections.
+2. Do NOT add any information not already present in the CV.
+3. Return the complete updated cv_content JSON.
+4. Also return a brief natural-language confirmation of what you changed.
+```
+
+After every AI call, `cv_parser.py` validates the response against a Pydantic schema before any data is saved.
+
+---
+
+## Authentication Flow
+
+```
+Register / Login  →  access_token (30 min) + refresh_token (7 days)
+Every request     →  Authorization: Bearer {access_token}
+Token expires     →  Axios interceptor calls POST /auth/refresh automatically
+Refresh fails     →  User is redirected to /login
+Logout            →  Refresh token invalidated on server
+```
+
+- Passwords are hashed with **bcrypt** and never stored in plain text
+- JWTs are signed with `SECRET_KEY` and cannot be forged without it
+- The Axios client in `src/api/client.js` handles token attachment and silent refresh transparently — all API functions work the same whether the token is fresh or has just been refreshed
 
 ---
 
@@ -378,30 +571,30 @@ Templates are Jinja2 HTML files with print-optimised CSS — fully ATS-compatibl
 # Start all containers
 docker compose up
 
-# Stop containers (data is preserved)
+# Stop containers (data is preserved in Docker volume)
 Ctrl+C
 
-# Wipe everything including the database
+# Wipe everything including the database volume
 docker compose down -v
 ```
 
 ### Rebuilding after changes
 
 ```bash
-# Backend Python files — auto-reloads via Uvicorn watchfiles (no rebuild needed)
+# Backend Python files — Uvicorn auto-reloads (no rebuild needed)
 
-# Frontend source changes
+# After changing frontend source files
 docker compose up --build frontend
 
-# Dependency changes (requirements.txt or package.json)
+# After changing requirements.txt or package.json
 docker compose up --build backend
 docker compose up --build frontend
 ```
 
-### Database migrations
+### Running database migrations
 
 ```bash
-# After adding or modifying a model
+# After adding or modifying an ORM model
 docker exec -it cv-maker-backend-1 bash
 alembic revision --autogenerate -m "describe your change"
 alembic upgrade head
@@ -412,66 +605,218 @@ exit
 
 1. Add the model class to `backend/app/models/`
 2. Import it in `backend/app/models/__init__.py`
-3. Import it in `backend/migrations/env.py`
+3. Import it in `backend/app/db/migrations/env.py` so Alembic detects it
 4. Run the migration commands above
 
-### Inspecting the database
+### Inspecting the database directly
 
 ```bash
-# Quick terminal access
 docker exec -it cv-maker-db-1 psql -U cvmaker_user -d cvmaker
-\dt    # list tables
-\q     # exit
+\dt        # list all tables
+\d users   # describe a specific table
+\q         # exit
 ```
 
-For a GUI, temporarily add `ports: ["5432:5432"]` to the `db` service in `docker-compose.yml`, then connect with any PostgreSQL client on `localhost:5432`. Remove the port mapping before deploying.
+For a GUI client (TablePlus, DBeaver, etc.): temporarily add `ports: ["5432:5432"]` to the `db` service in `docker-compose.yml`, connect on `localhost:5432`, then remove the port mapping before deploying.
 
 ---
 
-## Authentication Flow
+## Testing
 
-```
-Register / Login  →  access_token (30 min) + refresh_token (7 days)
-Every request     →  Authorization: Bearer {access_token}
-Token expired     →  Axios interceptor calls /auth/refresh automatically
-Refresh fails     →  User redirected to /login
+Tests live in `backend/tests/` and use `pytest`.
+
+```bash
+# Run all tests
+docker exec -it cv-maker-backend-1 bash
+pytest tests/ -v
 ```
 
-Passwords are hashed with bcrypt and never stored in plain text. JWTs are signed with `SECRET_KEY` and cannot be forged without it.
+### Test coverage
+
+**`test_auth.py`**
+- Register a new user → receives JWT
+- Login with correct credentials → receives JWT
+- Login with wrong password → 401
+- Access protected route without token → 401
+- Token refresh → new access token returned
+
+**`test_profile.py`**
+- Create a work experience entry
+- GET profile returns all sections
+- Update an experience entry
+- Delete an experience entry
+- User A cannot access or modify user B's profile data
+
+**`test_cv_generation.py`**
+- Prompt builder serialises profile data correctly
+- `cv_parser` validates AI output schema
+- Background task sets `status=complete` on success
+- Background task sets `status=failed` on OpenAI error (mocked)
+
+**`test_chat.py`**
+- Chat send updates `cv_content` in the database
+- Chat history is persisted across requests
+- Chat messages are rejected if they try to introduce hallucinated content
 
 ---
 
 ## Deployment (Azure)
 
-The app deploys to **Azure Container Apps** via GitHub Actions.
+### Azure Resource Map
 
-### Infrastructure
+```
+Resource Group: cvmaker-rg
+│
+├── Azure Container Registry (ACR)     — stores backend + frontend Docker images
+├── Azure Container Apps Environment   — cvmaker-env
+│   ├── Container App: cvmaker-backend (internal ingress)
+│   └── Container App: cvmaker-frontend (external ingress, public URL)
+├── Azure Database for PostgreSQL      — Flexible Server, managed production DB
+├── Azure Key Vault                    — stores OPENAI_API_KEY, SECRET_KEY, DB password
+└── Azure Log Analytics Workspace      — centralised container logs
+```
 
-| Resource | Purpose |
+### Step 1 — Provision Azure Resources (one-time)
+
+```bash
+az login
+az account set --subscription "your-subscription-id"
+
+# Resource group
+az group create --name cvmaker-rg --location eastus
+
+# Container Registry
+az acr create --resource-group cvmaker-rg \
+  --name cvmakeracr --sku Basic --admin-enabled true
+
+# PostgreSQL Flexible Server
+az postgres flexible-server create \
+  --resource-group cvmaker-rg \
+  --name cvmaker-db \
+  --admin-user cvmaker_user \
+  --admin-password "YourStrongPassword!" \
+  --sku-name Standard_B1ms \
+  --tier Burstable
+
+# Key Vault + secrets
+az keyvault create --name cvmaker-kv --resource-group cvmaker-rg
+az keyvault secret set --vault-name cvmaker-kv --name "openai-api-key" --value "sk-..."
+az keyvault secret set --vault-name cvmaker-kv --name "secret-key" --value "your-jwt-secret"
+
+# Log Analytics Workspace
+az monitor log-analytics workspace create \
+  --resource-group cvmaker-rg --workspace-name cvmaker-logs
+
+# Container Apps Environment
+az containerapp env create \
+  --name cvmaker-env \
+  --resource-group cvmaker-rg \
+  --location eastus \
+  --logs-workspace-id $(az monitor log-analytics workspace show \
+      --resource-group cvmaker-rg --workspace-name cvmaker-logs \
+      --query customerId -o tsv)
+
+# Container Apps (placeholder image — CI/CD will update these)
+az containerapp create \
+  --name cvmaker-backend \
+  --resource-group cvmaker-rg \
+  --environment cvmaker-env \
+  --image mcr.microsoft.com/azuredocs/containerapps-helloworld \
+  --target-port 8000 \
+  --ingress internal
+
+az containerapp create \
+  --name cvmaker-frontend \
+  --resource-group cvmaker-rg \
+  --environment cvmaker-env \
+  --image mcr.microsoft.com/azuredocs/containerapps-helloworld \
+  --target-port 80 \
+  --ingress external
+```
+
+### Step 2 — Configure GitHub Secrets
+
+Go to **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
+
+| Secret Name | Value |
 |---|---|
-| Azure Container Registry | Stores Docker images |
-| Azure Container Apps | Runs backend and frontend containers |
-| Azure Database for PostgreSQL | Managed production database |
-| Azure Key Vault | Stores secrets, injected via managed identity |
-| Azure Log Analytics Workspace | Centralised container logs |
-
-### CI/CD Pipeline
-
-Every push to `main` triggers the GitHub Actions workflow, which runs `pytest`, builds and pushes Docker images to ACR (tagged with the commit SHA), then updates the running Container Apps. Pull requests trigger tests only — no deploy.
-
-### Required GitHub Secrets
-
-| Secret | Value |
-|---|---|
-| `AZURE_CREDENTIALS` | JSON output of `az ad sp create-for-rbac` |
-| `ACR_NAME` | Your ACR name (e.g. `cvmakeracr`) |
-| `ACR_LOGIN_SERVER` | e.g. `cvmakeracr.azurecr.io` |
+| `AZURE_CREDENTIALS` | JSON output of `az ad sp create-for-rbac` (see below) |
+| `ACR_NAME` | `cvmakeracr` |
+| `ACR_LOGIN_SERVER` | `cvmakeracr.azurecr.io` |
 | `OPENAI_API_KEY` | Your OpenAI key |
 | `SECRET_KEY` | Your JWT secret |
 
-All production secrets are injected via Key Vault references — no secrets are stored in code or container images.
+```bash
+# Generate AZURE_CREDENTIALS
+az ad sp create-for-rbac \
+  --name "cvmaker-github-actions" \
+  --role contributor \
+  --scopes /subscriptions/{subscription-id}/resourceGroups/cvmaker-rg \
+  --sdk-auth
+# Copy the entire JSON output → paste as the AZURE_CREDENTIALS secret
+```
 
-> Database migrations are run as a one-off Container Apps Job after each deploy, not at app startup, to avoid race conditions when multiple replicas start simultaneously.
+### Step 3 — Run Database Migrations in Production
+
+Migrations run as a one-off Container Apps Job — not at app startup — to avoid race conditions when multiple replicas start simultaneously:
+
+```bash
+az containerapp job create \
+  --name cvmaker-migrate \
+  --resource-group cvmaker-rg \
+  --environment cvmaker-env \
+  --image cvmakeracr.azurecr.io/backend:latest \
+  --replica-timeout 300 \
+  --replica-retry-limit 1 \
+  --trigger-type Manual \
+  --command "alembic upgrade head"
+
+az containerapp job start \
+  --name cvmaker-migrate \
+  --resource-group cvmaker-rg
+```
+
+### Step 4 — Inject Production Environment Variables
+
+All secrets are pulled from Key Vault via managed identity — no secrets in code or container images:
+
+```bash
+az containerapp update \
+  --name cvmaker-backend \
+  --resource-group cvmaker-rg \
+  --set-env-vars \
+    OPENAI_API_KEY=secretref:openai-api-key \
+    SECRET_KEY=secretref:secret-key \
+    DATABASE_URL="postgresql+asyncpg://cvmaker_user:YourPassword@cvmaker-db.postgres.database.azure.com:5432/cvmaker" \
+    ENVIRONMENT=production
+```
+
+---
+
+## CI/CD Pipeline
+
+Every push to `main` triggers `.github/workflows/deploy.yml`:
+
+```
+push to main
+    │
+    ├─ Job 1: test
+    │   ├─ Set up Python 3.12
+    │   ├─ pip install -r requirements.txt
+    │   └─ pytest tests/ -v --tb=short
+    │
+    └─ Job 2: build-and-deploy (only if tests pass, only on main)
+        ├─ Azure login
+        ├─ Login to ACR
+        ├─ Build + push backend image (tagged with git SHA + latest)
+        ├─ Build + push frontend image (tagged with git SHA + latest)
+        ├─ az containerapp update → backend (deploy SHA-tagged image)
+        └─ az containerapp update → frontend (deploy SHA-tagged image)
+```
+
+Pull requests trigger `Job 1` (tests) only — no deployment.
+
+The entire pipeline from push to live URL takes approximately 5 minutes.
 
 ---
 
@@ -479,25 +824,30 @@ All production secrets are injected via Key Vault references — no secrets are 
 
 | Area | Decision | Reason |
 |---|---|---|
-| Auth | JWT access + refresh tokens, bcrypt | Stateless, straightforward, secure |
-| AI model | GPT-4o, JSON mode | Best output quality, structured and parseable responses |
+| Auth | JWT access + refresh tokens, bcrypt | Stateless, straightforward, well-supported |
+| AI model | GPT-4o, JSON mode | Best output quality, structured and parseable |
 | AI safety | Strict no-hallucination system prompt | CV content must be factual — core product requirement |
 | PDF engine | WeasyPrint (Python-native) | No headless browser needed, easy to containerise |
-| CV storage | JSONB column | Fast re-render across templates, edit without re-generating |
-| Background jobs | FastAPI `BackgroundTasks` | Sufficient for MVP, no extra infrastructure |
-| Frontend state | Zustand | Lightweight, no Redux boilerplate |
-| Secrets | Azure Key Vault via managed identity | No secrets in code or images |
-
-### Upgrade Path
-
-When the app is stable and ready to scale:
-
-- Replace `BackgroundTasks` → **Celery + Redis** for reliable async job queuing
-- Add **Redis cache** for profile data and rendered templates
-- Add **rate limiting** per user on AI generation endpoints
-- Add **WebSockets** to replace polling on CV generation status
-- Split PDF engine into its own container if load increases
+| CV storage | JSONB column (`cv_content`) | Fast re-render across templates, editable without re-calling AI |
+| Background jobs | FastAPI `BackgroundTasks` | Sufficient for MVP, no extra infrastructure or queue service |
+| Frontend state | Zustand | Lightweight, simple API, no Redux boilerplate |
+| Container orchestration | Docker Compose (dev) / Azure Container Apps (prod) | Simple, cost-effective for small-to-medium scale |
+| Secrets management | Azure Key Vault via managed identity | No secrets in code, images, or environment files |
+| Templates | Jinja2 HTML + print CSS | Easy to maintain, ATS-friendly plain HTML output |
 
 ---
 
-*FastAPI · React · PostgreSQL · OpenAI · Azure*
+## Upgrade Path
+
+When the app is stable and ready to scale beyond MVP:
+
+- Replace `BackgroundTasks` → **Celery + Redis** for reliable async job queuing with retries
+- Add **Redis cache** layer for profile data and rendered templates
+- Add **rate limiting** middleware per user on AI generation endpoints
+- Add **WebSockets** to replace polling on CV generation status
+- Split PDF engine into its own container if PDF rendering becomes a bottleneck
+- Add **Blob Storage** (Azure) for PDF files rather than DB storage
+
+---
+
+*FastAPI · React · PostgreSQL · GPT-4o · WeasyPrint · Docker · Azure Container Apps*
