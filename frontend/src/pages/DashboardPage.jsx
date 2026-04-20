@@ -27,6 +27,7 @@ export default function DashboardPage() {
       <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-ubuntu-border bg-ubuntu-aubergine md:flex">
         <div className="border-b border-white/15 px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-100">Workspace</p>
+          <img src={require('../assets/cv-maker-logo.svg')} alt="CV Maker Logo" className="h-8 mx-auto mb-2" />
           <p className="mt-2 text-2xl font-bold tracking-tight text-white">CV Maker</p>
         </div>
 
