@@ -101,14 +101,20 @@ jobs:
           az containerapp update \
             --name $BACKEND_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/backend:${GITHUB_SHA}
+            --image $ACR_LOGIN_SERVER/backend:${GITHUB_SHA} \
+            --registry-server $ACR_LOGIN_SERVER \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }}
 
       - name: Deploy frontend revision
         run: |
           az containerapp update \
             --name $FRONTEND_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/frontend:${GITHUB_SHA}
+            --image $ACR_LOGIN_SERVER/frontend:${GITHUB_SHA} \
+            --registry-server $ACR_LOGIN_SERVER \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }}
 
   smoke_test:
     runs-on: ubuntu-latest
