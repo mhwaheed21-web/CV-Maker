@@ -98,23 +98,29 @@ jobs:
 
       - name: Deploy backend revision
         run: |
+          az containerapp registry set \
+            --name $BACKEND_APP_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --server $ACR_LOGIN_SERVER \
+            --username ${{ secrets.ACR_USERNAME }} \
+            --password ${{ secrets.ACR_PASSWORD }}
           az containerapp update \
             --name $BACKEND_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/backend:${GITHUB_SHA} \
-            --registry-server $ACR_LOGIN_SERVER \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }}
+            --image $ACR_LOGIN_SERVER/backend:${GITHUB_SHA}
 
       - name: Deploy frontend revision
         run: |
+          az containerapp registry set \
+            --name $FRONTEND_APP_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --server $ACR_LOGIN_SERVER \
+            --username ${{ secrets.ACR_USERNAME }} \
+            --password ${{ secrets.ACR_PASSWORD }}
           az containerapp update \
             --name $FRONTEND_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/frontend:${GITHUB_SHA} \
-            --registry-server $ACR_LOGIN_SERVER \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }}
+            --image $ACR_LOGIN_SERVER/frontend:${GITHUB_SHA}
 
   smoke_test:
     runs-on: ubuntu-latest
